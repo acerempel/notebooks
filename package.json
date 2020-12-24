@@ -25,7 +25,9 @@
     "sinuous": "^0.27.11"
   },
   "babel": {
-    "plugins": ["sinuous/babel-plugin-htm"],
+    "plugins": [
+      "sinuous/babel-plugin-htm"
+    ],
     "presets": []
   }
 }
