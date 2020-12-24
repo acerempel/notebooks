@@ -3,6 +3,7 @@ import replace from "@rollup/plugin-replace";
 import livereload from 'rollup-plugin-livereload';
 import { terser } from "rollup-plugin-terser";
 import { babel } from '@rollup/plugin-babel';
+import commonjs from '@rollup/plugin-commonjs';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -15,6 +16,7 @@ export default {
   },
   plugins: [
     resolve(),
+    commonjs(),
     replace({ 'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development') }),
     babel({ babelHelpers: 'bundled' }),
     !production && terser({ ecma: 2015 }),
