@@ -15,7 +15,7 @@ export default {
     sourcemap: true
   },
   plugins: [
-    resolve(),
+    resolve({ mainFields: ['browser', 'module', 'main'] }),
     commonjs(),
     replace({ 'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development') }),
     babel({ babelHelpers: 'bundled' }),
