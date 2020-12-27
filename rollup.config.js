@@ -19,7 +19,13 @@ export default {
     resolve({ mainFields: ['browser', 'module', 'main'] }),
     commonjs(),
     json(),
-    replace({ 'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development') }),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
+      'process.env.GOTRUE_URL': JSON.stringify(process.env.GOTRUE_URL),
+      'process.env.AUDIENCE': JSON.stringify(process.env.AUDIENCE),
+      'process.env.EXPIRY_MARGIN': JSON.stringify(process.env.EXPIRY_MARGIN),
+      'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
+    }),
     babel({ babelHelpers: 'bundled' }),
     !production && terser({ ecma: 2015 }),
     !production && livereload('public'),
