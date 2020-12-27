@@ -5,6 +5,7 @@
   "main": "src/main.js",
   "author": "Alan Rempel <alan.rempel@gmail.com>",
   "license": "BSD-3-Clause",
+  "private": true,
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@rollup/plugin-babel": "^5.2.2",
