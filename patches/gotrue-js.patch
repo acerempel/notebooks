@@ -1,0 +1,30 @@
+diff --git a/dist/module/GoTrueApi.js b/dist/module/GoTrueApi.js
+index aebe59f724c2470b291d159bb7f8a6450f94cac9..589b5acc71746afeae91551e1312cabfea96ea23 100644
+--- a/dist/module/GoTrueApi.js
++++ b/dist/module/GoTrueApi.js
+@@ -1,4 +1,4 @@
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
++var __awaiter = function (thisArg, _arguments, P, generator) {
+     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+     return new (P || (P = Promise))(function (resolve, reject) {
+         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+diff --git a/dist/module/GoTrueClient.js b/dist/module/GoTrueClient.js
+index 9721b4cfe35c1a9dd03eb17ba20937ec601e093f..60e129163c46bdaec081c0cad1f35b2e32b175d9 100644
+--- a/dist/module/GoTrueClient.js
++++ b/dist/module/GoTrueClient.js
+@@ -1,4 +1,4 @@
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
++var __awaiter = function (thisArg, _arguments, P, generator) {
+     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+     return new (P || (P = Promise))(function (resolve, reject) {
+         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+diff --git a/dist/module/lib/fetch.js b/dist/module/lib/fetch.js
+index 640adce5fbf11cd0a7901e9e098f47fdc57ab23e..d6932f16b0f6b5a3dd46a6e06aab9cebd95b9754 100644
+--- a/dist/module/lib/fetch.js
++++ b/dist/module/lib/fetch.js
+@@ -1,4 +1,4 @@
+-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
++var __awaiter = function (thisArg, _arguments, P, generator) {
+     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+     return new (P || (P = Promise))(function (resolve, reject) {
+         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
