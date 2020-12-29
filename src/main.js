@@ -6,17 +6,10 @@ import {DOMParser} from "prosemirror-model"
 import {schema} from "prosemirror-schema-basic"
 import {exampleSetup} from "prosemirror-example-setup"
 
-import { observable, subscribe } from 'sinuous/observable';
-import { h } from 'sinuous';
-
 import { createClient } from '@supabase/supabase-js';
 
-// document.addEventListener("DOMContentLoaded", (event) => ());
+import h from 'stage0';
 
-const user = observable(null);
-
-const currentNotebook = observable(null);
-const currentNote = observable(null);
 function interpretURL() {
   // Split on the path separator; ignore the first element, as it is the empty string
   // (because the path begins with a slash).
@@ -27,46 +20,65 @@ function interpretURL() {
   currentNote(pathParts[1]);
 }
 
-function signUp(event) {
-  user("Potato");
-}
-function signIn(event) {
-  user("Ptomonot");
-}
-function signOut(event) {
-  user(null);
-}
+const noUserButtons = h`
+  <span>
+    <button #signupbutton>Create account</button>
+    <button #signinbutton>Sign in</button>
+  </span>
+`;
 
-const AuthControls = () => {
-    return user() === null
-      ? html`
-        <button onclick=${signUp}>Create account</button>
-        <button onclick=${signIn}>Sign in</button>
-      ` : html`
-        <strong>${user()}</strong>
-        <button onclick=${signOut}>Sign out</button>
-      `;
-}
+const authenticatedButtons = h`
+  <span>
+    <strong>#userName</strong>
+    <button #signoutbutton>Sign out</button>
+  </span>
+`;
 
-function createEditor({ editor, content }) {
-  let state = EditorState.create({
-    doc: DOMParser.fromSchema(schema).parse(content), 
-    plugins: exampleSetup({schema: schema, menuBar: false})
-  });
-  return new EditorView(editor, { state });
-}
-
-const Page = props => {
-  return html`
-    <header><h1>Good evening</h1> ${AuthControls}</header>
-    <nav><a onclick=${() => currentNote(1)}>Note 1</a></nav>
+const page = h`
+  <div>
+    <header><h1>Good evening</h1><span #userbuttons></span></header>
+    <nav #notelist></nav>
     <main>
-      <article id=editor></article>
+      <article #editor></article>
     </main>
-  `;
+  </div>
+`;
+
+function Page() {
+  const { userbuttons, notelist, editor } = page.collect(page);
+  const { userName, signoutbutton } = authenticatedButtons.collect(authenticatedButtons);
+  const { signupbutton, signinbutton } = noUserButtons.collect(noUserButtons);
+  let user = null;
+  function updateUser(newUser) {
+    user = newUser;
+    userName.nodeValue = user;
+  }
+  function signIn(_) {
+    updateUser("Potato");
+    noUserButtons.replaceWith(authenticatedButtons);
+  }
+  function signOut(_) {
+    authenticatedButtons.replaceWith(noUserButtons);
+  }
+  function signUp(_) {
+    updateUser("Tomato");
+    noUserButtons.replaceWith(authenticatedButtons);
+  }
+  signupbutton.onclick = signUp;
+  signoutbutton.onclick = signOut;
+  signinbutton.onclick = signIn;
+  userbuttons.prepend(noUserButtons);
+
+  const editorStateConfig = {schema, plugins: exampleSetup({schema: schema, menuBar: false})};
+  let editorView = function() {
+    let state = EditorState.create(editorStateConfig);
+    return new EditorView(editor, { state });
+  }();
+
+  return page; 
 }
 
-document.body.append(Page({}));
+document.body.append(Page());
 
 const SUPABASE_URL = "https://qhqomieoafclafetsoxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYwODgyMzk3MSwiZXhwIjoxOTI0Mzk5OTcxfQ.ZBHH8NRe8eMVj8xuNUHoLuroL--zvKVO6YYsPS2zJqQ";
@@ -77,17 +89,3 @@ async function fetchNote(noteId) {
   if (error) { console.error(error); }
   return data;
 }
-
-let editor;
-let noteContent = document.createElement("article");
-subscribe(() => {
-  let noteId = currentNote();
-  if (noteId) {
-    let note = fetchNote(noteId).then(([note]) => {
-      noteContent.innerHTML = note.body;
-      editor = createEditor({ editor: document.getElementById("editor"), content: noteContent });
-    });
-  }
-});
-
-interpretURL();

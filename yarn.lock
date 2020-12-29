@@ -1250,7 +1250,7 @@ fsevents@~2.1.2:
     rollup: ^2.35.1
     rollup-plugin-livereload: ^2.0.0
     rollup-plugin-terser: ^7.0.2
-    sinuous: ^0.27.11
+    stage0: ^0.0.25
   languageName: unknown
   linkType: soft
 
@@ -1979,13 +1979,6 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"sinuous@npm:^0.27.11":
-  version: 0.27.11
-  resolution: "sinuous@npm:0.27.11"
-  checksum: c1bcf05f4fa811ede6d26632b28d037319c72f7740f8450698a8c1e3406233fe971223b13e215fb8b7bf7d6efaa6b5f557f5371dc47b98868934d57ccf6102ee
-  languageName: node
-  linkType: hard
-
 "source-map-support@npm:~0.5.19":
   version: 0.5.19
   resolution: "source-map-support@npm:0.5.19"
@@ -2049,6 +2042,13 @@ fsevents@~2.1.2:
     sshpk-sign: bin/sshpk-sign
     sshpk-verify: bin/sshpk-verify
   checksum: 4bd7422634ec3730404186179e5d9ba913accc64449f18d594b3a757a3b81000719adc94cf0c93a7b3da42487ae42404a1f37bfaa7908a60743d4478382b9d78
+  languageName: node
+  linkType: hard
+
+"stage0@npm:^0.0.25":
+  version: 0.0.25
+  resolution: "stage0@npm:0.0.25"
+  checksum: f91fe415511ef32f555ed7f39c793a753cbf1d7d8d935f456b7b7e88421e74bb4662b981ae1c1c0d2b7f532ba242e4279e967fa02f65b11b75bca8f2ed535453
   languageName: node
   linkType: hard
 
