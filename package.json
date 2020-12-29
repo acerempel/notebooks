@@ -7,8 +7,6 @@
   "license": "BSD-3-Clause",
   "private": true,
   "devDependencies": {
-    "@babel/core": "^7.0.0",
-    "@rollup/plugin-babel": "^5.2.2",
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.0.1",
@@ -30,10 +28,5 @@
     "@supabase/realtime-js": "patch:@supabase/realtime-js@^1.0.6#./patches/realtime-js.patch",
     "@supabase/gotrue-js": "patch:@supabase/gotrue-js@^1.9.2#./patches/gotrue-js.patch",
     "@supabase/postgrest-js": "patch:@supabase/postgrest-js@^0.22.0#./patches/postgrest-js.patch"
-  },
-  "babel": {
-    "plugins": [
-    ],
-    "presets": []
   }
 }

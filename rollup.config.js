@@ -2,7 +2,6 @@ import resolve from '@rollup/plugin-node-resolve';
 import replace from "@rollup/plugin-replace";
 import livereload from 'rollup-plugin-livereload';
 import { terser } from "rollup-plugin-terser";
-import { babel } from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 
@@ -26,7 +25,6 @@ export default {
       'process.env.EXPIRY_MARGIN': JSON.stringify(process.env.EXPIRY_MARGIN),
       'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
     }),
-    babel({ babelHelpers: 'bundled' }),
     production && terser({ ecma: 2015 }),
     !production && livereload('public'),
   ],
