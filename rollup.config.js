@@ -27,7 +27,7 @@ export default {
       'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
     }),
     babel({ babelHelpers: 'bundled' }),
-    !production && terser({ ecma: 2015 }),
+    production && terser({ ecma: 2015 }),
     !production && livereload('public'),
   ],
   watch: { clearScreen: false }
