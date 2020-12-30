@@ -48,11 +48,13 @@ function Page() {
   const { userbuttons, notelist, editor } = page.collect(page);
   const { userName, signoutbutton } = authenticatedButtons.collect(authenticatedButtons);
   const { signupbutton, signinbutton } = noUserButtons.collect(noUserButtons);
+
   let user = null;
   function updateUser(newUser) {
     user = newUser;
     userName.nodeValue = user;
   }
+
   function signIn(_) {
     updateUser("Potato");
     noUserButtons.replaceWith(authenticatedButtons);
@@ -69,11 +71,18 @@ function Page() {
   signinbutton.onclick = signIn;
   userbuttons.prepend(noUserButtons);
 
-  const editorStateConfig = {schema, plugins: exampleSetup({schema: schema, menuBar: false})};
+  const editorStateConfig = { schema, plugins: exampleSetup({schema: schema, menuBar: false}) };
   let editorView = function() {
     let state = EditorState.create(editorStateConfig);
     return new EditorView(editor, { state });
   }();
+  function setEditorState(jsonDoc) {
+    let newEditorState = EditorState.fromJSON(editorStateConfig, jsonDoc);
+    editorView.updateState(newEditorState);
+  }
+  function getEditorState() {
+    return editorView.state.toJSON();
+  }
 
   return page; 
 }
