@@ -98,7 +98,7 @@ const Main = (props: { user: UserMaybe, noteID: string }) => {
     </div>;
 };
 
-type Route = { page: string, rest: string[], title: string | undefined }
+type Route = { page: string, rest: string[], title?: string }
 
 const UnknownURL = () => {
   const { route } = useContext(Router);
@@ -143,5 +143,10 @@ function interpretURL(setRoute: (route: Route) => void) {
   let pathParts = window.location.pathname.split('/').slice(1);
   // Ignore a trailing slash.
   if (pathParts[pathParts.length - 1] === "") { pathParts.pop() }
-  setRoute({ page: pathParts[0], rest: pathParts.slice(1), title: undefined });
+  let route = pathParts === []
+    ? { page: "notes", rest: [], title: "Notes" }
+    : { page: pathParts[0], rest: pathParts.slice(1) };
+  let url = "/" + [route.page, ...route.rest].join("/");
+  history.replaceState(null, route.title ?? "", url);
+  setRoute(route);
 }
