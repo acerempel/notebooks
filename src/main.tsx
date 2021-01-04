@@ -24,26 +24,59 @@ const SUPABASE_URL = "https://qhqomieoafclafetsoxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYwODgyMzk3MSwiZXhwIjoxOTI0Mzk5OTcxfQ.ZBHH8NRe8eMVj8xuNUHoLuroL--zvKVO6YYsPS2zJqQ";
 const database = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const defaultRoute: Route = { page: "notes", rest: [], title: "Notes" }
-const Router = createContext({ route: defaultRoute, goTo(_: Route) {} });
+interface Route { page: Page, noteID?: string };
+function urlOfRoute(route: Route) {
+  let noteID;
+  return '/' + route.page + (noteID = route.noteID ? '/' + noteID : '');
+}
+
+enum Page {
+  Notes = "notes",
+  SignIn = "signin",
+  SignUp = "signup",
+  Unknown = "404"
+}
+interface PageInfo { title: string };
+const Pages: Record<Page, PageInfo> = {
+  notes: { title: "Notes" },
+  signup: { title: "Create an account" },
+  signin: { title: "Sign in" },
+  '404': { title: "Page not found" }
+}
+
+const defaultRoute: Route = { page: Page.Notes }
+const Router = createContext({ route: defaultRoute, goTo(_: Route, __?: string) {} });
 
 const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   const [route, setRoute]: [Route, (to: Route) => void] = createState(defaultRoute);
-  window.onpopstate = (_event: Event) => interpretURL(setRoute);
-  const router = { route, goTo: setRoute };
+  window.onpopstate = (event: PopStateEvent) => {
+    let newRoute;
+    if (event.state) {
+      newRoute = event.state;
+    } else {
+      newRoute = routeOfRelativeURL(window.location.pathname);
+      history.replaceState(newRoute, Pages[newRoute.page].title, urlOfRoute(newRoute));
+    }
+    setRoute(newRoute);
+  };
+  createEffect(() => document.title = Pages[route.page].title);
+  const goTo = (to: Route, url?: string) => {
+    history.pushState(to, Pages[to.page].title, url || urlOfRoute(to));
+    setRoute(to);
+  }
+  const router = { route, goTo };
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
 
-const Link = (props: { children: JSX.Element[] | JSX.Element, to: string, title: string | undefined }) => {
-  let pathParts = props.to.split("/");
-  let route = { page: pathParts[0], rest: pathParts.slice(1), title: props.title };
+const Link = (props: { children: JSX.Element[] | JSX.Element, to: Page, noteID?: string }) => {
+  let route = { page: props.to, noteID: props.noteID };
   const router = useContext(Router);
+  const url = urlOfRoute(route);
   const handleClick = (event: Event) => {
     event.preventDefault();
-    history.pushState(null, props.title ?? "", "/" + props.to);
-    router.goTo(route)
+    router.goTo(route, url);
   }
-  return <a href={props.to} onClick={handleClick}>{props.children}</a>
+  return <a href={url} onClick={handleClick}>{props.children}</a>
 }
 
 type UserMaybe = User | null;
@@ -69,7 +102,7 @@ const SignUp = ({ setUser }: { setUser: (newUser: UserMaybe) => void }) => {
   </main>;
 };
 
-const Main = (props: { user: UserMaybe, noteID: string }) => {
+const Notes = (props: { user: UserMaybe, noteID?: string }) => {
   // @ts-ignore: See above.
   let editorNode: HTMLElement = undefined;
   let editorView;
@@ -85,8 +118,8 @@ const Main = (props: { user: UserMaybe, noteID: string }) => {
           </Match>
           <Match when={props.user === null}>
             <span>
-              <Link to="signup" title="Create an account">Create an account</Link>
-              <Link to="signin" title="Sign in">Sign in</Link>
+              <Link to={Page.SignUp}>Create an account</Link>
+              <Link to={Page.SignIn}>Sign in</Link>
             </span>
           </Match>
         </Switch>
@@ -98,13 +131,11 @@ const Main = (props: { user: UserMaybe, noteID: string }) => {
     </div>;
 };
 
-type Route = { page: string, rest: string[], title?: string }
-
 const UnknownURL = () => {
   const { route } = useContext(Router);
   return <main>
     <h1>Page not found!</h1>
-    <p>The url {[route.page, ...route.rest].join("/")} does not correspond to any page.</p>
+    <p>The url {urlOfRoute(route)} does not correspond to any page.</p>
   </main>
 };
 
@@ -112,18 +143,21 @@ const App = () => {
   const [getUser, setUser] = createSignal(null as UserMaybe);
   return <Routed>
     <h1>Bonjour!</h1>
-    <Page getUser={getUser} setUser={setUser}/>
+    <Main getUser={getUser} setUser={setUser}/>
   </Routed>
 }
 
-const Page = ({ getUser, setUser }: { getUser: () => UserMaybe, setUser: (u: UserMaybe) => UserMaybe }) => {
+const Main = ({ getUser, setUser }: { getUser: () => UserMaybe, setUser: (u: UserMaybe) => UserMaybe }) => {
   const { route } = useContext(Router);
   return <Switch fallback={<UnknownURL/>}>
-    <Match when={route.page === "signup"}>
+    <Match when={route.page === Page.SignUp}>
       <SignUp setUser={setUser}/>
     </Match>
-    <Match when={route.page === "notes"}>
-      <Main user={getUser()} noteID={route.rest[0]}/>
+    <Match when={route.page === Page.Notes}>
+      <Notes user={getUser()} noteID={route.noteID}/>
+    </Match>
+    <Match when={route.page === Page.Unknown}>
+      <UnknownURL/>
     </Match>
   </Switch>
 }
@@ -136,17 +170,25 @@ async function fetchNote(noteId: string) {
   return data;
 }
 
-// Client-side routing function.
-function interpretURL(setRoute: (route: Route) => void) {
+function routeOfRelativeURL(url: string): Route {
   // Split on the path separator; ignore the first element, as it is the empty string
   // (because the path begins with a slash).
-  let pathParts = window.location.pathname.split('/').slice(1);
+  let pathParts = url.split('/').slice(1);
   // Ignore a trailing slash.
   if (pathParts[pathParts.length - 1] === "") { pathParts.pop() }
-  let route = pathParts === []
-    ? { page: "notes", rest: [], title: "Notes" }
-    : { page: pathParts[0], rest: pathParts.slice(1) };
-  let url = "/" + [route.page, ...route.rest].join("/");
-  history.replaceState(null, route.title ?? "", url);
-  setRoute(route);
+  console.log("PathParts", pathParts);
+  let page; let noteID = undefined;
+  // Can't do `pathParts === []`, because arrays are objects and are all distinct.
+  if (pathParts.length === 0) {
+    page = Page.Notes;
+  } else {
+    switch (pathParts[0]) {
+      case "notes": page = Page.Notes; break;
+      case "signup": page = Page.SignUp; break;
+      case "signin": page = Page.SignIn; break;
+      default: page = Page.Unknown;
+    }
+    noteID = pathParts[1] ?? undefined;
+  }
+  return { page, noteID };
 }
