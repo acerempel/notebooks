@@ -7,27 +7,55 @@
   "license": "BSD-3-Clause",
   "private": true,
   "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@rollup/plugin-babel": "^5.2.2",
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.0.1",
     "@rollup/plugin-replace": "^2.3.4",
+    "@rollup/plugin-typescript": "^8.1.0",
+    "@types/babel__core": "^7",
+    "@types/prosemirror-commands": "^1",
+    "@types/prosemirror-gapcursor": "^1",
+    "@types/prosemirror-history": "^1",
+    "@types/prosemirror-inputrules": "^1",
+    "@types/prosemirror-keymap": "^1",
+    "@types/prosemirror-schema-list": "^1",
+    "acorn": "^8.0.4",
+    "acorn-jsx": "^5.3.1",
+    "babel-preset-solid": "^0.23.5",
     "rollup": "^2.35.1",
     "rollup-plugin-livereload": "^2.0.0",
-    "rollup-plugin-terser": "^7.0.2"
+    "rollup-plugin-terser": "^7.0.2",
+    "tslib": "^2.0.3",
+    "typescript": "^4.1.3"
   },
   "dependencies": {
     "@supabase/supabase-js": "patch:@supabase/supabase-js@^1.1.2#./patches/supabase-js.patch",
+    "@types/prosemirror-schema-basic": "^1.0.1",
+    "@types/prosemirror-state": "^1.2.5",
+    "@types/prosemirror-view": "^1.16.1",
+    "prosemirror-commands": "^1.1.4",
     "prosemirror-example-setup": "^1.1.2",
+    "prosemirror-gapcursor": "^1.1.5",
+    "prosemirror-history": "^1.1.3",
+    "prosemirror-inputrules": "^1.1.3",
+    "prosemirror-keymap": "^1.1.4",
     "prosemirror-model": "^1.13.1",
     "prosemirror-schema-basic": "^1.1.2",
+    "prosemirror-schema-list": "^1.1.4",
     "prosemirror-state": "^1.3.3",
     "prosemirror-view": "^1.16.5",
-    "s-js": "^0.4.9",
-    "stage0": "^0.0.25"
+    "solid-js": "^0.23.6"
   },
   "resolutions": {
     "@supabase/realtime-js": "patch:@supabase/realtime-js@^1.0.6#./patches/realtime-js.patch",
     "@supabase/gotrue-js": "patch:@supabase/gotrue-js@^1.9.2#./patches/gotrue-js.patch",
     "@supabase/postgrest-js": "patch:@supabase/postgrest-js@^0.22.0#./patches/postgrest-js.patch"
+  },
+  "babel": {
+    "presets": [
+      "solid"
+    ]
   }
 }

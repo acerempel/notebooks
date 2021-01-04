@@ -4,11 +4,14 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from "rollup-plugin-terser";
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import { babel } from '@rollup/plugin-babel';
+import typescript from '@rollup/plugin-typescript';
+import jsx from 'acorn-jsx';
 
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: 'src/main.js',
+  input: 'src/main.tsx',
   output: {
     file: 'public/bundle.js',
     format: 'iife',
@@ -17,6 +20,8 @@ export default {
   plugins: [
     resolve({ mainFields: ['browser', 'module', 'main'] }),
     commonjs(),
+    typescript(),
+    babel({ babelHelpers: "bundled" }),
     json(),
     replace({
       'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
@@ -28,5 +33,6 @@ export default {
     production && terser({ ecma: 2015 }),
     !production && livereload('public'),
   ],
+  acornInjectPlugins: [ jsx() ],
   watch: { clearScreen: false }
 };

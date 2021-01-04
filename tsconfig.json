@@ -1,0 +1,15 @@
+{
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2017",
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "allowJs": true,
+    "outDir": "compiled",
+    "rootDir": "src"
+  }
+}
