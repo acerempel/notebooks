@@ -29,7 +29,7 @@ export default {
     resolve({ mainFields: ['browser', 'module', 'main'] }),
     commonjs(),
     typescript(),
-    babel({ babelHelpers: "bundled" }),
+    babel({ babelHelpers: "bundled", extensions: ['.js', '.jsx', '.ts', '.tsx'] }),
     json(),
     replace(replacements),
     production && terser({ ecma: 2015 }),
