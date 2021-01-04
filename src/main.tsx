@@ -38,11 +38,12 @@ const Link = (props: { children: JSX.Element[] | JSX.Element, to: string, title:
   let pathParts = props.to.split("/");
   let route = { page: pathParts[0], rest: pathParts.slice(1), title: props.title };
   const router = useContext(Router);
-  const handleClick = () => {
+  const handleClick = (event: Event) => {
+    event.preventDefault();
     history.pushState(null, props.title ?? "", "/" + props.to);
     router.goTo(route)
   }
-  return <a href={props.to} onClick={(_e) => handleClick()}>{props.children}</a>
+  return <a href={props.to} onClick={handleClick}>{props.children}</a>
 }
 
 type UserMaybe = User | null;
