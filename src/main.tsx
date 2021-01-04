@@ -62,7 +62,6 @@ const SignUp = ({ setUser }: { setUser: (newUser: UserMaybe) => void }) => {
   return <main>
     <h1>Create an account</h1>
     <form onSubmit={doSignUp}>
-      // @ts-ignore
       <label>Email <input type="email" ref={email}/></label>
       <label>Password <input type="password" ref={password}/></label>
       <button type="submit">Sign up</button>
