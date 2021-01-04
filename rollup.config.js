@@ -10,6 +10,14 @@ import jsx from 'acorn-jsx';
 
 const production = !process.env.ROLLUP_WATCH;
 
+const replacements = {
+  'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
+  'process.env.GOTRUE_URL': JSON.stringify(process.env.GOTRUE_URL),
+  'process.env.AUDIENCE': JSON.stringify(process.env.AUDIENCE),
+  'process.env.EXPIRY_MARGIN': JSON.stringify(process.env.EXPIRY_MARGIN),
+  'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
+};
+
 export default {
   input: 'src/main.tsx',
   output: {
@@ -23,13 +31,7 @@ export default {
     typescript(),
     babel({ babelHelpers: "bundled" }),
     json(),
-    replace({
-      'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
-      'process.env.GOTRUE_URL': JSON.stringify(process.env.GOTRUE_URL),
-      'process.env.AUDIENCE': JSON.stringify(process.env.AUDIENCE),
-      'process.env.EXPIRY_MARGIN': JSON.stringify(process.env.EXPIRY_MARGIN),
-      'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
-    }),
+    replace(replacements),
     production && terser({ ecma: 2015 }),
     !production && livereload('public'),
   ],
