@@ -6,7 +6,7 @@ import {plugins} from "./editor/plugins"
 import { createClient, User } from '@supabase/supabase-js';
 
 import { createSignal, createState, createEffect, createContext, useContext, JSX } from "solid-js";
-import { render, Switch, Match } from "solid-js/web";
+import { render, Switch, Match, Dynamic } from "solid-js/web";
 
 function displayError(er: unknown) {
   console.error(er); // TODO show it in the DOM
@@ -36,12 +36,97 @@ enum Page {
   SignUp = "signup",
   Unknown = "404"
 }
-interface PageInfo { title: string };
+
+type UserMaybe = User | null;
+
+const ActiveUser = createContext({
+  user: () => null as UserMaybe,
+  setUser: (_: UserMaybe) => null as UserMaybe
+});
+
+const UserContext = (props: { children: JSX.Element | JSX.Element[] }) => {
+  const [user, setUser] = createSignal(null as UserMaybe);
+  return <ActiveUser.Provider value={{ user, setUser }}>{props.children}</ActiveUser.Provider>
+}
+
+const SignUp = () => {
+  const { setUser } = useContext(ActiveUser);
+  async function doSignUp(event: Event) {
+    event.preventDefault();
+    let { user, error } = await database.auth.signUp({ email: email.value, password: password.value });
+    if (error) { displayError(error) }
+    else { setUser(user); }
+  }
+  // @ts-ignore: These get assigned before use because of the `ref` thing.
+  // TypeScript also complains if we declare without assigning here, and that
+  // can't be turned off with ts-ignore inside JSX, apparently.
+  let email: HTMLInputElement = undefined, password: HTMLInputElement = undefined;
+  return <main>
+    <h1>Create an account</h1>
+    <form onSubmit={doSignUp}>
+      <label>Email <input type="email" ref={email}/></label>
+      <label>Password <input type="password" ref={password}/></label>
+      <button type="submit">Sign up</button>
+    </form>
+  </main>;
+};
+
+const Notes = () => {
+  // @ts-ignore: See above.
+  let editorNode: HTMLElement = undefined;
+  let editorView;
+  const { user } = useContext(ActiveUser);
+  createEffect(() => { editorView = initializeEditorView(editorNode) });
+  return <div>
+      <header><h1>Good evening</h1>
+        <Switch>
+          <Match when={user() !== null}>
+            <span>
+              <strong>{user()?.email}</strong>
+              <button>Sign out</button>
+            </span>
+          </Match>
+          <Match when={user() === null}>
+            <span>
+              <Link to={Page.SignUp}>Create an account</Link>
+              <Link to={Page.SignIn}>Sign in</Link>
+            </span>
+          </Match>
+        </Switch>
+      </header>
+      <nav><ul></ul></nav>
+      <main>
+        <article ref={editorNode}></article>
+      </main>
+    </div>;
+};
+
+const UnknownURL = () => {
+  const { route } = useContext(Router);
+  return <main>
+    <h1>Page not found!</h1>
+    <p>The url {urlOfRoute(route)} does not correspond to any page.</p>
+  </main>
+};
+
+const App = () => {
+  return <UserContext><Routed>
+    <h1>Bonjour!</h1>
+    <Main/>
+  </Routed></UserContext>
+}
+
+const Main = () => {
+  const { route } = useContext(Router);
+  return <Dynamic component={Pages[route.page].component}/>
+}
+
+interface PageInfo { title: string, component: () => JSX.Element };
 const Pages: Record<Page, PageInfo> = {
-  notes: { title: "Notes" },
-  signup: { title: "Create an account" },
-  signin: { title: "Sign in" },
-  '404': { title: "Page not found" }
+  notes: { title: "Notes", component: Notes },
+  signup: { title: "Create an account", component: SignUp },
+  signin: { title: "Sign in", component: () => <p>Oh no!</p> },
+  '404': { title: "Page not found", component: UnknownURL }
 }
 
 const defaultRoute: Route = { page: Page.Notes }
@@ -77,89 +162,6 @@ const Link = (props: { children: JSX.Element[] | JSX.Element, to: Page, noteID?:
     router.goTo(route, url);
   }
   return <a href={url} onClick={handleClick}>{props.children}</a>
-}
-
-type UserMaybe = User | null;
-
-const SignUp = ({ setUser }: { setUser: (newUser: UserMaybe) => void }) => {
-  async function doSignUp(event: Event) {
-    event.preventDefault();
-    let { user, error } = await database.auth.signUp({ email: email.value, password: password.value });
-    if (error) { displayError(error) }
-    else { setUser(user); }
-  }
-  // @ts-ignore: These get assigned before use because of the `ref` thing.
-  // TypeScript also complains if we declare without assigning here, and that
-  // can't be turned off with ts-ignore inside JSX, apparently.
-  let email: HTMLInputElement = undefined, password: HTMLInputElement = undefined;
-  return <main>
-    <h1>Create an account</h1>
-    <form onSubmit={doSignUp}>
-      <label>Email <input type="email" ref={email}/></label>
-      <label>Password <input type="password" ref={password}/></label>
-      <button type="submit">Sign up</button>
-    </form>
-  </main>;
-};
-
-const Notes = (props: { user: UserMaybe, noteID?: string }) => {
-  // @ts-ignore: See above.
-  let editorNode: HTMLElement = undefined;
-  let editorView;
-  createEffect(() => { editorView = initializeEditorView(editorNode) });
-  return <div>
-      <header><h1>Good evening</h1>
-        <Switch>
-          <Match when={props.user !== null}>
-            <span>
-              <strong>{props.user?.email}</strong>
-              <button>Sign out</button>
-            </span>
-          </Match>
-          <Match when={props.user === null}>
-            <span>
-              <Link to={Page.SignUp}>Create an account</Link>
-              <Link to={Page.SignIn}>Sign in</Link>
-            </span>
-          </Match>
-        </Switch>
-      </header>
-      <nav><ul></ul></nav>
-      <main>
-        <article ref={editorNode}></article>
-      </main>
-    </div>;
-};
-
-const UnknownURL = () => {
-  const { route } = useContext(Router);
-  return <main>
-    <h1>Page not found!</h1>
-    <p>The url {urlOfRoute(route)} does not correspond to any page.</p>
-  </main>
-};
-
-const App = () => {
-  const [getUser, setUser] = createSignal(null as UserMaybe);
-  return <Routed>
-    <h1>Bonjour!</h1>
-    <Main getUser={getUser} setUser={setUser}/>
-  </Routed>
-}
-
-const Main = ({ getUser, setUser }: { getUser: () => UserMaybe, setUser: (u: UserMaybe) => UserMaybe }) => {
-  const { route } = useContext(Router);
-  return <Switch fallback={<UnknownURL/>}>
-    <Match when={route.page === Page.SignUp}>
-      <SignUp setUser={setUser}/>
-    </Match>
-    <Match when={route.page === Page.Notes}>
-      <Notes user={getUser()} noteID={route.noteID}/>
-    </Match>
-    <Match when={route.page === Page.Unknown}>
-      <UnknownURL/>
-    </Match>
-  </Switch>
 }
 
 render(() => <App/>, document.body);
