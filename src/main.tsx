@@ -66,12 +66,14 @@ const SignUp = () => {
 type NoteInfo = { title: string }
 const Notes = () => {
   const notes = new Map<string,EditorState>();
-  const [noteList, setNoteList] = createSignal([] as string[]);
+  const [noteList, setNoteList] = createSignal(new Set<string>());
+  const [noteInfo, setNoteInfo] = createState({} as Record<string,NoteInfo>);
   const { user } = useContext(ActiveUser);
   const { route, goTo } = useContext(Router);
 
   let activeNoteID: string | null = null;
-  function nextNoteID() { let id = ""; id += "a"; return id; }
+  let prevID = "";
+  function nextNoteID() { prevID += "a"; return prevID; }
 
   // Initialize the ProseMirror editor in the given DOM node.
   function initializeEditorView(editorElement: Node) {
@@ -82,6 +84,8 @@ const Notes = () => {
       if (!activeNoteID) {
         let id = nextNoteID();
         activeNoteID = id;
+        setNoteInfo(activeNoteID, {title: "Untitled"});
+        setNoteList(untrack(() => noteList().add(id)));
         goTo({ noteID: id });
       }
     } });
@@ -99,13 +103,15 @@ const Notes = () => {
 
   createEffect(() => {
     let noteID = route.noteID;
-    if (noteID && noteID !== activeNoteID) {
-      // We are editing a particular note – not the one we were already editing,
-      // if any. Remember which one.
+    if (noteID) {
+      if (noteID !== activeNoteID) { // We are editing a particular note – not the one we were already editing, if any.
+      // If we were already editing a note, save it.
+      if (activeNoteID) notes.set(activeNoteID, editorView.state);
       activeNoteID = noteID;
       let noteState = notes.get(noteID);
       // If we know of this note, show it; if not, create a fresh note.
       noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
+      } // Otherwise, we are already editing the requested note; do nothing.
     } else if (activeNoteID) {
       // We are not editing any note. We were just now, though. Make sure to
       // save its contents.
@@ -135,8 +141,8 @@ const Notes = () => {
         </Switch>
       </header>
       <nav><ul>
-          <For each={noteList()}>
-            {id => <li><Link noteID={id}>Untitled</Link></li>}
+          <For each={Array.from(noteList())}>
+            {id => <li><Link noteID={id}>{noteInfo[id].title}</Link></li>}
           </For>
       </ul></nav>
       <main>
