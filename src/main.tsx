@@ -5,19 +5,11 @@ import {plugins} from "./editor/plugins"
 
 import { createClient, User } from '@supabase/supabase-js';
 
-import { createSignal, createState, createEffect, createContext, useContext, JSX } from "solid-js";
-import { render, Switch, Match, Dynamic } from "solid-js/web";
+import { createSignal, createState, createEffect, createContext, useContext, untrack, JSX } from "solid-js";
+import { render, Switch, Match, Dynamic, For } from "solid-js/web";
 
 function displayError(er: unknown) {
   console.error(er); // TODO show it in the DOM
-}
-
-// Initialize the ProseMirror editor in the given DOM node.
-function initializeEditorView(editorElement: Node) {
-  const editorStateConfig = { schema, plugins: plugins({ schema }) };
-  let state = EditorState.create(editorStateConfig);
-  let view = new EditorView(editorElement, { state });
-  return view;
 }
 
 const SUPABASE_URL = "https://qhqomieoafclafetsoxd.supabase.co";
@@ -25,9 +17,9 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsI
 const database = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 interface Route { page: Page, noteID?: string };
-function urlOfRoute(route: Route) {
-  let noteID;
-  return '/' + route.page + (noteID = route.noteID ? '/' + noteID : '');
+function urlOfRoute(route: Partial<Route>): string {
+  let noteID = route.noteID;
+  return '/' + (route.page ?? Page.Notes) + (noteID ? '/' + noteID : '');
 }
 
 enum Page {
@@ -71,12 +63,60 @@ const SignUp = () => {
   </main>;
 };
 
+type NoteInfo = { title: string }
 const Notes = () => {
+  const notes = new Map<string,EditorState>();
+  const [noteList, setNoteList] = createSignal([] as string[]);
+  const { user } = useContext(ActiveUser);
+  const { route, goTo } = useContext(Router);
+
+  let activeNoteID: string | null = null;
+  function nextNoteID() { let id = ""; id += "a"; return id; }
+
+  // Initialize the ProseMirror editor in the given DOM node.
+  function initializeEditorView(editorElement: Node) {
+    let state = createEditorState();
+    let view = new EditorView(editorElement, { state, dispatchTransaction: (transaction) => {
+      let newState = view.state.apply(transaction);
+      view.updateState(newState);
+      if (!activeNoteID) {
+        let id = nextNoteID();
+        activeNoteID = id;
+        goTo({ noteID: id });
+      }
+    } });
+    return view;
+  }
+  function createEditorState(): EditorState {
+    const editorStateConfig = { schema, plugins: plugins({ schema }) };
+    return EditorState.create(editorStateConfig);
+  }
+
   // @ts-ignore: See above.
   let editorNode: HTMLElement = undefined;
-  let editorView;
-  const { user } = useContext(ActiveUser);
+  let editorView: EditorView;
   createEffect(() => { editorView = initializeEditorView(editorNode) });
+
+  createEffect(() => {
+    let noteID = route.noteID;
+    if (noteID && noteID !== activeNoteID) {
+      // We are editing a particular note – not the one we were already editing,
+      // if any. Remember which one.
+      activeNoteID = noteID;
+      let noteState = notes.get(noteID);
+      // If we know of this note, show it; if not, create a fresh note.
+      noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
+    } else if (activeNoteID) {
+      // We are not editing any note. We were just now, though. Make sure to
+      // save its contents.
+      notes.set(activeNoteID, editorView.state);
+      // No longer editing.
+      activeNoteID = null;
+      // Blank out the editor.
+      editorView.updateState(createEditorState());
+    }
+  });
+
   return <div>
       <header><h1>Good evening</h1>
         <Switch>
@@ -94,8 +134,13 @@ const Notes = () => {
           </Match>
         </Switch>
       </header>
-      <nav><ul></ul></nav>
+      <nav><ul>
+          <For each={noteList()}>
+            {id => <li><Link noteID={id}>Untitled</Link></li>}
+          </For>
+      </ul></nav>
       <main>
+        <button onClick={(_ev) => goTo({ noteID: undefined })}>New note</button>
         <article ref={editorNode}></article>
       </main>
     </div>;
@@ -130,36 +175,38 @@ const Pages: Record<Page, PageInfo> = {
 }
 
 const defaultRoute: Route = { page: Page.Notes }
-const Router = createContext({ route: defaultRoute, goTo(_: Route, __?: string) {} });
+const Router = createContext({ route: defaultRoute, goTo(_route: Partial<Route>, _url?: string) {} });
 
 const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
-  const [route, setRoute]: [Route, (to: Route) => void] = createState(defaultRoute);
+  const [route, setRoute] = createState(defaultRoute);
   window.onpopstate = (event: PopStateEvent) => {
     let newRoute;
     if (event.state) {
       newRoute = event.state;
     } else {
       newRoute = routeOfRelativeURL(window.location.pathname);
-      history.replaceState(newRoute, Pages[newRoute.page].title, urlOfRoute(newRoute));
+      history.replaceState(null, Pages[newRoute.page].title, urlOfRoute(newRoute));
     }
     setRoute(newRoute);
   };
   createEffect(() => document.title = Pages[route.page].title);
-  const goTo = (to: Route, url?: string) => {
-    history.pushState(to, Pages[to.page].title, url || urlOfRoute(to));
+  const goTo = (to: Partial<Route>, url?: string) => {
     setRoute(to);
+    untrack(() => history.pushState(null, Pages[route.page].title, url || urlOfRoute(route)));
   }
   const router = { route, goTo };
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
 
-const Link = (props: { children: JSX.Element[] | JSX.Element, to: Page, noteID?: string }) => {
-  let route = { page: props.to, noteID: props.noteID };
+const Link = (props: { children: JSX.Element[] | JSX.Element } & ({ to: Page, noteID?: string } | { noteID: string })) => {
+  let route: Partial<Route>;
+  if ("to" in props) { route = { page: props.to, noteID: props.noteID } }
+  else { route = { noteID: props.noteID } };
   const router = useContext(Router);
   const url = urlOfRoute(route);
   const handleClick = (event: Event) => {
     event.preventDefault();
-    router.goTo(route, url);
+    router.goTo(route);
   }
   return <a href={url} onClick={handleClick}>{props.children}</a>
 }
