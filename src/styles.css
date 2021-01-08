@@ -4,6 +4,10 @@
 
 @layer components {
   /* Adjust some of @tailwindcss/typography's settings */
+  .prose {
+    @apply text-gray-900;
+  }
+
   .prose p:first-child {
     margin-top: 0;
   }
@@ -11,6 +15,24 @@
     margin-top: 1em;
     margin-bottom: 1em;
     line-height: 1.5;
+  }
+
+  .prose blockquote {
+    font-weight: inherit;
+    font-style: normal;
+    @apply text-gray-700;
+  }
+  .prose blockquote p:first-of-type::before,
+  .prose blockquote p:first-of-type::after {
+    content: none;
+  }
+
+  .prose pre {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+  }
+  .prose code::before, .prose code::after {
+    content: none;
   }
 
   .ProseMirror {
