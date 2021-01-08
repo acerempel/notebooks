@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Adjust some of @tailwindcss/typography's settings */
+  .prose p:first-child {
+    margin-top: 0;
+  }
+  .prose p {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    line-height: 1.5;
+  }
+
+  .ProseMirror {
+    /* 5rem is the height of the header plus top and bottom margins */
+    height: calc(100vh - 5rem);
+    overflow-y: scroll;
+  }
+}

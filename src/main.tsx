@@ -8,6 +8,8 @@ import { createClient, User } from '@supabase/supabase-js';
 import { createSignal, createState, createEffect, createContext, useContext, untrack, JSX } from "solid-js";
 import { render, Switch, Match, Dynamic, For } from "solid-js/web";
 
+import './styles.css';
+
 function displayError(er: unknown) {
   console.error(er); // TODO show it in the DOM
 }
@@ -123,32 +125,35 @@ const Notes = () => {
     }
   });
 
-  return <div>
-      <header class="nav">
+  return <>
+      <header class="flex">
+        <h1 class="font-bold">Notes</h1>
         <Switch>
           <Match when={user() !== null}>
-              <strong>{user()?.email}</strong>
-              <a class="nav-link" href="#">Sign out</a>
+              <strong class="ml-auto">{user()?.email}</strong>
+              <a class="ml-4" href="#">Sign out</a>
           </Match>
           <Match when={user() === null}>
-            <Link cssClass="nav-link" to={Page.SignUp}>Create an account</Link>
-            <Link cssClass="nav-link" to={Page.SignIn}>Sign in</Link>
+            <Link cssClass="ml-auto" to={Page.SignUp}>Create an account</Link>
+            <Link cssClass="ml-4" to={Page.SignIn}>Sign in</Link>
           </Match>
         </Switch>
       </header>
-      <section class="row">
-        <nav class="col">
-        <button class="btn btn-primary" onClick={(_ev) => goTo({ noteID: undefined })}>New note</button>
-        <ul>
+      <section class="flex mt-4">
+        <nav class="flex-initial w-52">
+          <button
+            class="rounded-lg bg-indigo-600 active:bg-indigo-700 text-gray-50 px-2 py-1 -ml-2 -mt-1"
+            onClick={(_ev) => goTo({ noteID: undefined })}>New note</button>
+        <ul class="mt-4 space-y-2">
           <For each={Array.from(noteList())}>
             {id => <li><Link noteID={id}>{noteInfo[id].title}</Link></li>}
           </For>
       </ul></nav>
-      <main class="col-8">
-        <article ref={editorNode}></article>
+      <main class="flex-auto w-96 ml-4">
+        <article class="prose" ref={editorNode}></article>
       </main>
       </section>
-    </div>;
+    </>;
 };
 
 const UnknownURL = () => {
@@ -161,8 +166,7 @@ const UnknownURL = () => {
 
 const App = () => {
   return <UserContext><Routed>
-      <div class="container-lg">
-        <h1>Bonjour!</h1>
+      <div class="my-4 mx-4 sm:mx-6 md:mx-8">
         <Main/>
       </div>
   </Routed></UserContext>
