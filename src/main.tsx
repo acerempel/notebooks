@@ -124,31 +124,30 @@ const Notes = () => {
   });
 
   return <div>
-      <header><h1>Good evening</h1>
+      <header class="nav">
         <Switch>
           <Match when={user() !== null}>
-            <span>
               <strong>{user()?.email}</strong>
-              <button>Sign out</button>
-            </span>
+              <a class="nav-link" href="#">Sign out</a>
           </Match>
           <Match when={user() === null}>
-            <span>
-              <Link to={Page.SignUp}>Create an account</Link>
-              <Link to={Page.SignIn}>Sign in</Link>
-            </span>
+            <Link cssClass="nav-link" to={Page.SignUp}>Create an account</Link>
+            <Link cssClass="nav-link" to={Page.SignIn}>Sign in</Link>
           </Match>
         </Switch>
       </header>
-      <nav><ul>
+      <section class="row">
+        <nav class="col">
+        <button class="btn btn-primary" onClick={(_ev) => goTo({ noteID: undefined })}>New note</button>
+        <ul>
           <For each={Array.from(noteList())}>
             {id => <li><Link noteID={id}>{noteInfo[id].title}</Link></li>}
           </For>
       </ul></nav>
-      <main>
-        <button onClick={(_ev) => goTo({ noteID: undefined })}>New note</button>
+      <main class="col-8">
         <article ref={editorNode}></article>
       </main>
+      </section>
     </div>;
 };
 
@@ -162,8 +161,10 @@ const UnknownURL = () => {
 
 const App = () => {
   return <UserContext><Routed>
-    <h1>Bonjour!</h1>
-    <Main/>
+      <div class="container-lg">
+        <h1>Bonjour!</h1>
+        <Main/>
+      </div>
   </Routed></UserContext>
 }
 
@@ -204,7 +205,7 @@ const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
 
-const Link = (props: { children: JSX.Element[] | JSX.Element } & ({ to: Page, noteID?: string } | { noteID: string })) => {
+const Link = (props: { children: JSX.Element[] | JSX.Element, cssClass?: string } & ({ to: Page, noteID?: string } | { noteID: string })) => {
   let route: Partial<Route>;
   if ("to" in props) { route = { page: props.to, noteID: props.noteID } }
   else { route = { noteID: props.noteID } };
@@ -214,7 +215,7 @@ const Link = (props: { children: JSX.Element[] | JSX.Element } & ({ to: Page, no
     event.preventDefault();
     router.goTo(route);
   }
-  return <a href={url} onClick={handleClick}>{props.children}</a>
+  return <a href={url} class={props.cssClass ?? ""} onClick={handleClick}>{props.children}</a>
 }
 
 render(() => <App/>, document.body);
