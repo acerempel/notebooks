@@ -5,7 +5,10 @@ import {plugins} from "./editor/plugins"
 
 import { createClient, User } from '@supabase/supabase-js';
 
-import { createSignal, createState, createEffect, createContext, useContext, untrack, JSX } from "solid-js";
+import {
+  createSignal, createState, createEffect,
+  createContext, useContext, untrack,
+  createComputed, JSX } from "solid-js";
 import { render, Switch, Match, Dynamic, For } from "solid-js/web";
 
 import './styles.css';
@@ -225,7 +228,7 @@ const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
     setRoute(newRoute);
   };
   createEffect(() => document.title = Pages[route.page].title);
-  createEffect(updateToLocation);
+  createComputed(updateToLocation);
   const goTo = (to: Partial<Route>, url?: string) => {
     setRoute(to);
     untrack(() => history.pushState(null, Pages[route.page].title, url || urlOfRoute(route)));
