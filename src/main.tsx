@@ -70,6 +70,7 @@ const Notes = () => {
   const notes = new Map<string,EditorState>();
   const [noteList, setNoteList] = createSignal(new Set<string>());
   const [noteInfo, setNoteInfo] = createState({} as Record<string,NoteInfo>);
+  const [isEditorVisible, setEditorVisible] = createSignal(false);
   const { user } = useContext(ActiveUser);
   const { route, goTo } = useContext(Router);
 
@@ -84,10 +85,17 @@ const Notes = () => {
       let newState = view.state.apply(transaction);
       view.updateState(newState);
       if (!activeNoteID) {
+        // We don't bother giving this note an ID until the user actually types
+        // something.
         let id = nextNoteID();
         activeNoteID = id;
         setNoteInfo(activeNoteID, {title: "Untitled"});
+        // We call `untrack` because this will ultimately be called in a tracked
+        // context and we don't want recursive updates.
         setNoteList(untrack(() => noteList().add(id)));
+        // Navigate to the URL for the newly allocated note ID. Since
+        // `activeNoteID` is already set to the same ID, the editor state is
+        // preserved.
         goTo({ noteID: id });
       }
     } });
@@ -105,23 +113,38 @@ const Notes = () => {
 
   createEffect(() => {
     let noteID = route.noteID;
-    if (noteID) {
-      if (noteID !== activeNoteID) { // We are editing a particular note – not the one we were already editing, if any.
+    if (noteID === "new") { // Creating a new note
+      if (activeNoteID) { // We were already editing a note
+        // Save the note we were just editing.
+        notes.set(activeNoteID, editorView.state);
+        // Don't have a note ID yet. We create it when the user types something.
+        activeNoteID = null;
+        // Blank out the editor.
+        editorView.updateState(createEditorState());
+      }
+      setEditorVisible(true);
+      editorView.focus();
+    } else if (noteID && noteID !== activeNoteID) {
+      // We are editing a particular note – not the one we were already editing,
+      // if any. (If it was the one we were already editing, there is no need to
+      // do anything.)
       // If we were already editing a note, save it.
       if (activeNoteID) notes.set(activeNoteID, editorView.state);
       activeNoteID = noteID;
       let noteState = notes.get(noteID);
       // If we know of this note, show it; if not, create a fresh note.
       noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
-      } // Otherwise, we are already editing the requested note; do nothing.
-    } else if (activeNoteID) {
+      setEditorVisible(true);
+    } // Otherwise, we are already editing the requested note; do nothing.
+    if (!noteID && activeNoteID) {
       // We are not editing any note. We were just now, though. Make sure to
       // save its contents.
       notes.set(activeNoteID, editorView.state);
       // No longer editing.
       activeNoteID = null;
-      // Blank out the editor.
+      // Blank out the editor and hide it.
       editorView.updateState(createEditorState());
+      setEditorVisible(false);
     }
   });
 
@@ -143,14 +166,14 @@ const Notes = () => {
         <nav class="flex-initial w-52">
           <button
             class="rounded-lg bg-indigo-600 active:bg-indigo-700 text-gray-50 px-2 py-1 -ml-2 -mt-1"
-            onClick={(_ev) => goTo({ noteID: undefined })}>New note</button>
+            onClick={(_ev) => goTo({ noteID: "new" })}>New note</button>
         <ul class="mt-4 space-y-2">
           <For each={Array.from(noteList())}>
             {id => <li><Link noteID={id}>{noteInfo[id].title}</Link></li>}
           </For>
       </ul></nav>
       <main class="flex-auto w-96 ml-4">
-        <article class="prose" ref={editorNode}></article>
+        <article class="prose" style={{ display: isEditorVisible() ? 'block' : 'none' }} ref={editorNode}></article>
       </main>
       </section>
     </>;
@@ -190,17 +213,19 @@ const Router = createContext({ route: defaultRoute, goTo(_route: Partial<Route>,
 
 const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   const [route, setRoute] = createState(defaultRoute);
+  function updateToLocation() {
+    let newRoute = routeOfRelativeURL(window.location.pathname);
+    history.replaceState(null, Pages[newRoute.page].title, urlOfRoute(newRoute));
+    return newRoute;
+  }
   window.onpopstate = (event: PopStateEvent) => {
     let newRoute;
-    if (event.state) {
-      newRoute = event.state;
-    } else {
-      newRoute = routeOfRelativeURL(window.location.pathname);
-      history.replaceState(null, Pages[newRoute.page].title, urlOfRoute(newRoute));
-    }
+    if (event.state) { newRoute = event.state; }
+    else { newRoute = updateToLocation(); }
     setRoute(newRoute);
   };
   createEffect(() => document.title = Pages[route.page].title);
+  createEffect(updateToLocation);
   const goTo = (to: Partial<Route>, url?: string) => {
     setRoute(to);
     untrack(() => history.pushState(null, Pages[route.page].title, url || urlOfRoute(route)));
