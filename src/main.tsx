@@ -79,7 +79,6 @@ const Notes = () => {
   const notes = new Map<string,EditorState>();
   const [noteList, setNoteList] = createSignal(new Set<string>());
   const [noteInfo, setNoteInfo] = createState({} as Record<string,NoteInfo>);
-  const [isEditorVisible, setEditorVisible] = createSignal(false);
   const { user } = useContext(ActiveUser);
   const { route, goTo } = useContext(Router);
 
@@ -131,7 +130,6 @@ const Notes = () => {
         // Blank out the editor.
         editorView.updateState(createEditorState());
       }
-      setEditorVisible(true);
       editorView.focus();
     } else if (noteID && noteID !== activeNoteID) {
       // We are editing a particular note – not the one we were already editing,
@@ -143,7 +141,6 @@ const Notes = () => {
       let noteState = notes.get(noteID);
       // If we know of this note, show it; if not, create a fresh note.
       noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
-      setEditorVisible(true);
     } // Otherwise, we are already editing the requested note; do nothing.
     else if (!noteID) {
       // We are not editing any note.
@@ -156,7 +153,6 @@ const Notes = () => {
       }
       // Blank out the editor and hide it.
       editorView.updateState(createEditorState());
-      setEditorVisible(false);
     }
   });
 
@@ -185,7 +181,7 @@ const Notes = () => {
           </For>
       </ul></nav>
       <main class="flex-auto w-96 ml-4">
-        <article class="prose" style={{ display: isEditorVisible() ? 'block' : 'none' }} ref={editorNode}></article>
+        <article class="prose" style={{ display: route.noteID ? 'block' : 'none' }} ref={editorNode}></article>
       </main>
       </section>
     </>;
