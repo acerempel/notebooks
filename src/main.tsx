@@ -34,6 +34,10 @@ enum Page {
   Unknown = "404"
 }
 
+const AllNotes: Route = { page: Page.Notes, noteID: undefined }
+const NewNote: Route = { page: Page.Notes, noteID: "new" }
+const EditNote: (id: string) => Route = (noteID) => ({ page: Page.Notes, noteID })
+
 type UserMaybe = User | null;
 
 const ActiveUser = createContext({
@@ -98,9 +102,8 @@ const Notes = () => {
         setNoteList(untrack(() => noteList().add(id)));
         // Navigate to the URL for the newly allocated note ID. Since
         // `activeNoteID` is already set to the same ID, the editor state is
-        // preserved. We need to repeat 'page' property here because of nonsense
-        // in the router.
-        goTo({ page: Page.Notes, noteID: id });
+        // preserved.
+        goTo(EditNote(id));
       }
     } });
     return view;
@@ -161,8 +164,8 @@ const Notes = () => {
               <a class="ml-4" href="#">Sign out</a>
           </Match>
           <Match when={user() === null}>
-            <Link cssClass="ml-auto" to={Page.SignUp}>Create an account</Link>
-            <Link cssClass="ml-4" to={Page.SignIn}>Sign in</Link>
+            <Link cssClass="ml-auto" to={{page: Page.SignUp}}>Create an account</Link>
+            <Link cssClass="ml-4" to={{page: Page.SignIn}}>Sign in</Link>
           </Match>
         </Switch>
       </header>
@@ -170,10 +173,10 @@ const Notes = () => {
         <nav class="flex-initial w-52">
           <button
             class="rounded-lg bg-indigo-600 active:bg-indigo-700 text-gray-50 px-2 py-1 -ml-2 -mt-1"
-            onClick={(_ev) => goTo({ page: Page.Notes, noteID: "new" })}>New note</button>
+            onClick={(_ev) => goTo(NewNote)}>New note</button>
         <ul class="mt-4 space-y-2">
           <For each={Array.from(noteList())}>
-            {id => <li><Link noteID={id}>{noteInfo[id].title}</Link></li>}
+            {id => <li><Link to={EditNote(id)}>{noteInfo[id].title}</Link></li>}
           </For>
       </ul></nav>
       <main class="flex-auto w-96 ml-4">
@@ -260,15 +263,12 @@ const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
 
-const Link = (props: { children: JSX.Element[] | JSX.Element, cssClass?: string } & ({ to: Page, noteID?: string } | { noteID: string })) => {
-  let route: Partial<Route>;
-  if ("to" in props) { route = { page: props.to, noteID: props.noteID } }
-  else { route = { noteID: props.noteID } };
+const Link = (props: { to: Route, children: JSX.Element[] | JSX.Element, cssClass?: string }) => {
   const router = useContext(Router);
-  const url = urlOfRoute(route);
+  const url = urlOfRoute(props.to);
   const handleClick = (event: Event) => {
     event.preventDefault();
-    router.goTo(route);
+    router.goTo(props.to);
   }
   return <a href={url} class={props.cssClass ?? ""} onClick={handleClick}>{props.children}</a>
 }
