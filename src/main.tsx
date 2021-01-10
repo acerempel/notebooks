@@ -98,8 +98,9 @@ const Notes = () => {
         setNoteList(untrack(() => noteList().add(id)));
         // Navigate to the URL for the newly allocated note ID. Since
         // `activeNoteID` is already set to the same ID, the editor state is
-        // preserved.
-        goTo({ noteID: id });
+        // preserved. We need to repeat 'page' property here because of nonsense
+        // in the router.
+        goTo({ page: Page.Notes, noteID: id });
       }
     } });
     return view;
@@ -169,7 +170,7 @@ const Notes = () => {
         <nav class="flex-initial w-52">
           <button
             class="rounded-lg bg-indigo-600 active:bg-indigo-700 text-gray-50 px-2 py-1 -ml-2 -mt-1"
-            onClick={(_ev) => goTo({ noteID: "new" })}>New note</button>
+            onClick={(_ev) => goTo({ page: Page.Notes, noteID: "new" })}>New note</button>
         <ul class="mt-4 space-y-2">
           <For each={Array.from(noteList())}>
             {id => <li><Link noteID={id}>{noteInfo[id].title}</Link></li>}
@@ -214,25 +215,46 @@ const Pages: Record<Page, PageInfo> = {
 const defaultRoute: Route = { page: Page.Notes }
 const Router = createContext({ route: defaultRoute, goTo(_route: Partial<Route>, _url?: string) {} });
 
+// Which method of the HTML History API to use – either `history.pushState` or
+// `history.replaceState`.
+const enum History { Push, Replace };
+
 const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
+  // We create a pair of reactive state nodes. The first is written to by the
+  // router and read by other components so they can react to changes in the
+  // route. The second is written to by other components whenever they want to
+  // navigate to a different route, and read by the router so that it can carry
+  // out the navigation and subsequently update the first state node. Simpler to
+  // understand the data flow than with a single state node.
+
+  // What is the current route.
   const [route, setRoute] = createState(defaultRoute);
-  function updateToLocation() {
-    let newRoute = routeOfRelativeURL(window.location.pathname);
-    history.replaceState(null, Pages[newRoute.page].title, urlOfRoute(newRoute));
-    return newRoute;
+  // What route must we navigate to.
+  const [requestedRoute, goTo] = createState(routeOfWindowLocation());
+
+  function routeOfWindowLocation(): Route {
+    return routeOfRelativeURL(window.location.pathname);
   }
-  window.onpopstate = (event: PopStateEvent) => {
-    let newRoute;
-    if (event.state) { newRoute = event.state; }
-    else { newRoute = updateToLocation(); }
+
+  function updateRoute(newRoute: Route) {
+    document.title = Pages[newRoute.page].title;
     setRoute(newRoute);
-  };
-  createEffect(() => document.title = Pages[route.page].title);
-  createComputed(updateToLocation);
-  const goTo = (to: Partial<Route>, url?: string) => {
-    setRoute(to);
-    untrack(() => history.pushState(null, Pages[route.page].title, url || urlOfRoute(route)));
   }
+
+  window.onpopstate = (_event: PopStateEvent) => {
+    updateRoute(routeOfWindowLocation())
+  };
+
+  createComputed((method) => {
+    const newTitle = Pages[requestedRoute.page].title;
+    const newURL = urlOfRoute(requestedRoute);
+    method === History.Push
+      ? history.pushState(null, newTitle, newURL)
+      : history.replaceState(null, newTitle, newURL);
+    updateRoute(requestedRoute);
+    return History.Push;
+  }, History.Replace);
+
   const router = { route, goTo };
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
