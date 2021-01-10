@@ -230,7 +230,7 @@ const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   // What is the current route.
   const [route, setRoute] = createState(defaultRoute);
   // What route must we navigate to.
-  const [requestedRoute, goTo] = createState(routeOfWindowLocation());
+  const [requestedRoute, goTo] = createSignal(routeOfWindowLocation());
 
   function routeOfWindowLocation(): Route {
     return routeOfRelativeURL(window.location.pathname);
@@ -246,12 +246,13 @@ const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   };
 
   createComputed((method) => {
-    const newTitle = Pages[requestedRoute.page].title;
-    const newURL = urlOfRoute(requestedRoute);
+    let reqRoute = requestedRoute();
+    const newTitle = Pages[reqRoute.page].title;
+    const newURL = urlOfRoute(reqRoute);
     method === History.Push
       ? history.pushState(null, newTitle, newURL)
       : history.replaceState(null, newTitle, newURL);
-    updateRoute(requestedRoute);
+    updateRoute(reqRoute);
     return History.Push;
   }, History.Replace);
 
