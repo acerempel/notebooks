@@ -130,6 +130,7 @@ const Notes = () => {
         // Blank out the editor.
         editorView.updateState(createEditorState());
       }
+      document.title = "New note";
       editorView.focus();
     } else if (noteID && noteID !== activeNoteID) {
       // We are editing a particular note – not the one we were already editing,
