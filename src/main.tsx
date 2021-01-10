@@ -38,6 +38,8 @@ const AllNotes: Route = { page: Page.Notes, noteID: undefined }
 const NewNote: Route = { page: Page.Notes, noteID: "new" }
 const EditNote: (id: string) => Route = (noteID) => ({ page: Page.Notes, noteID })
 
+type Children = JSX.Element | JSX.Element[]
+
 type UserMaybe = User | null;
 
 const ActiveUser = createContext({
@@ -45,7 +47,7 @@ const ActiveUser = createContext({
   setUser: (_: UserMaybe) => null as UserMaybe
 });
 
-const UserContext = (props: { children: JSX.Element | JSX.Element[] }) => {
+const UserContext = (props: { children: Children }) => {
   const [user, setUser] = createSignal(null as UserMaybe);
   return <ActiveUser.Provider value={{ user, setUser }}>{props.children}</ActiveUser.Provider>
 }
@@ -225,7 +227,7 @@ const Router = createContext({ route: defaultRoute, goTo(_route: Partial<Route>,
 // `history.replaceState`.
 const enum History { Push, Replace };
 
-const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
+const Routed = (props: { children: Children }) => {
   // We create a pair of reactive state nodes. The first is written to by the
   // router and read by other components so they can react to changes in the
   // route. The second is written to by other components whenever they want to
@@ -266,7 +268,7 @@ const Routed = (props: { children: JSX.Element[] | JSX.Element }) => {
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
 
-const Link = (props: { to: Route, children: JSX.Element[] | JSX.Element, cssClass?: string }) => {
+const Link = (props: { to: Route, children: Children, cssClass?: string }) => {
   const router = useContext(Router);
   const url = urlOfRoute(props.to);
   const handleClick = (event: Event) => {
