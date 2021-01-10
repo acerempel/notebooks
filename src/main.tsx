@@ -143,12 +143,15 @@ const Notes = () => {
       noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
       setEditorVisible(true);
     } // Otherwise, we are already editing the requested note; do nothing.
-    if (!noteID && activeNoteID) {
-      // We are not editing any note. We were just now, though. Make sure to
-      // save its contents.
-      notes.set(activeNoteID, editorView.state);
-      // No longer editing.
-      activeNoteID = null;
+    else if (!noteID) {
+      // We are not editing any note.
+      if (activeNoteID) {
+        // We were just now, though. Make sure to
+        // save its contents.
+        notes.set(activeNoteID, editorView.state);
+        // No longer editing.
+        activeNoteID = null;
+      }
       // Blank out the editor and hide it.
       editorView.updateState(createEditorState());
       setEditorVisible(false);
