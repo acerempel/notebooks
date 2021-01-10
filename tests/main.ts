@@ -1,11 +1,11 @@
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
-let browser;
+let browser: puppeteer.Browser;
 beforeAll(async () => {
   browser = await puppeteer.launch({ headless: true });
 })
 
-let page;
+let page: puppeteer.Page;
 beforeEach(async () => {
   page = await browser.newPage();
   await page.goto("http://localhost:3000/notes");
@@ -22,6 +22,6 @@ test('New note button exists', async () => {
 test('Clicking new note button causes editor to become focussed', async () => {
   const [button] = await page.$x('//button[text() = "New note"]')
   await button.click();
-  const editorIsFocussed = await page.evaluate(() => document.activeElement.classList.contains("ProseMirror"))
+  const editorIsFocussed = await page.evaluate(() => document.activeElement?.classList.contains("ProseMirror"))
   expect(editorIsFocussed).toBeTruthy()
 })
