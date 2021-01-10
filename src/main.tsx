@@ -288,7 +288,6 @@ function routeOfRelativeURL(url: string): Route {
   let pathParts = url.split('/').slice(1);
   // Ignore a trailing slash.
   if (pathParts[pathParts.length - 1] === "") { pathParts.pop() }
-  console.log("PathParts", pathParts);
   let page; let noteID = undefined;
   // Can't do `pathParts === []`, because arrays are objects and are all distinct.
   if (pathParts.length === 0) {
