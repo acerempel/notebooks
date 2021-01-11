@@ -1,7 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve';
 import replace from "@rollup/plugin-replace";
-import livereload from 'rollup-plugin-livereload';
-import { terser } from "rollup-plugin-terser";
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
@@ -9,10 +7,10 @@ import typescript from '@rollup/plugin-typescript';
 import postcss from 'rollup-plugin-postcss';
 import jsx from 'acorn-jsx';
 import tailwind from 'tailwindcss';
-import autoprefixer from 'autoprefixer';
 import extend from 'postcss-extend-rule';
 
-const production = !process.env.ROLLUP_WATCH;
+const ci = process.env.CI;
+const production = !process.env.ROLLUP_WATCH && !ci;
 
 const replacements = {
   'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
@@ -22,16 +20,16 @@ const replacements = {
   'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
 };
 
-const postCssConfig = {
+const postCssConfig = async () => ({
   extract: 'styles.css',
   plugins: [
-    tailwind, production && autoprefixer,
+    tailwind, production && (await import('autoprefixer')).default,
     extend({ onRecursiveExtend: 'warn', onUnusedExtend: 'warn' })
   ],
   minimize: production
-}
+})
 
-export default {
+export default (async () => ({
   input: 'src/main.tsx',
   output: {
     file: 'public/bundle.js',
@@ -43,12 +41,12 @@ export default {
     commonjs(),
     typescript(),
     babel({ babelHelpers: "bundled", extensions: ['.js', '.jsx', '.ts', '.tsx'] }),
-    postcss(postCssConfig),
+    postcss(await postCssConfig()),
     json(),
     replace(replacements),
-    production && terser({ ecma: 2015 }),
-    !production && livereload('public'),
+    production && (await import('rollup-plugin-terser')).terser({ ecma: 2015 }),
+    (!production && !ci) && (await import('rollup-plugin-livereload')).default('public'),
   ],
   acornInjectPlugins: [ jsx() ],
   watch: { clearScreen: false }
-};
+}));
