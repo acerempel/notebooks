@@ -8,7 +8,7 @@ import { createClient, User } from '@supabase/supabase-js';
 import {
   createSignal, createState, createEffect,
   createContext, useContext, untrack,
-  createComputed, JSX } from "solid-js";
+  createComputed, batch, JSX } from "solid-js";
 import { render, Switch, Match, Dynamic, For } from "solid-js/web";
 
 import './styles.css';
@@ -218,7 +218,7 @@ const Pages: Record<Page, PageInfo> = {
 }
 
 const defaultRoute: Route = { page: Page.Notes }
-const Router = createContext({ route: defaultRoute, goTo(_route: Partial<Route>, _url?: string) {} });
+const Router = createContext({ route: defaultRoute, goTo(_route: Route) {} });
 
 // Which method of the HTML History API to use – either `history.pushState` or
 // `history.replaceState`.
@@ -234,30 +234,29 @@ const Routed = (props: { children: Children }) => {
 
   // What is the current route.
   const [route, setRoute] = createState(defaultRoute);
+
+  const initialRoute = routeOfWindowLocation();
+
   // What route must we navigate to.
-  const [requestedRoute, goTo] = createSignal(routeOfWindowLocation());
+  const [requestedPage, setPage] = createSignal(initialRoute.page, true);
+  const [requestedNoteID, setNoteID] = createSignal(initialRoute.noteID, true);
 
-  function routeOfWindowLocation(): Route {
-    return routeOfRelativeURL(window.location.pathname);
-  }
+  function routeOfWindowLocation(): Route { return routeOfRelativeURL(window.location.pathname); }
 
-  function updateRoute(newRoute: Route) {
-    document.title = Pages[newRoute.page].title;
-    setRoute(newRoute);
-  }
+  function goTo(route: Route) { batch(() => { setPage(route.page); setNoteID(route.noteID) }) }
 
-  window.onpopstate = (_event: PopStateEvent) => {
-    updateRoute(routeOfWindowLocation())
-  };
+  window.onpopstate = (_event: PopStateEvent) => { setRoute(routeOfWindowLocation()) };
 
-  createComputed((method) => {
-    let reqRoute = requestedRoute();
-    const newTitle = Pages[reqRoute.page].title;
-    const newURL = urlOfRoute(reqRoute);
+  createComputed(() => setRoute("page", requestedPage()))
+  createComputed(() => setRoute("noteID", requestedNoteID()))
+
+  createEffect((method) => {
+    const newTitle = Pages[route.page].title;
+    const newURL = urlOfRoute(route);
     method === History.Push
       ? history.pushState(null, newTitle, newURL)
       : history.replaceState(null, newTitle, newURL);
-    updateRoute(reqRoute);
+    document.title = newTitle;
     return History.Push;
   }, History.Replace);
 
