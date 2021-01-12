@@ -31,9 +31,5 @@ jobs:
       run: yarn install --immutable
     - run: yarn run build
       env: {CI: true}
-    - name: Start the server
-      run: yarn run start &
     - name: Run tests
       run: yarn test
-    - name: Kill the server
-      run: kill %1

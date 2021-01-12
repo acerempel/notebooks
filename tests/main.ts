@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer';
+import { spawn, ChildProcess } from 'child_process';
 
 const baseURL = "http://localhost:3000"
 const newNoteButtonXPath = '//button[text() = "New note"]'
@@ -11,9 +12,39 @@ async function getEditor(page: puppeteer.Page): Promise<puppeteer.ElementHandle>
   return editor!
 }
 
+let server: ChildProcess;
+let dead: Promise<void>;
 let browser: puppeteer.Browser;
-beforeAll(async () => { browser = await puppeteer.launch({ headless: true }); })
-afterAll(async () => { await browser.close() })
+
+function spawnServer(): Promise<[ChildProcess, Promise<void>]> {
+  return new Promise((resolve, _reject) => {
+    let child = spawn("yarn run start", { detached: false, shell: true, stdio: ['ignore', 'inherit', 'inherit'] })
+    let deadPromise = new Promise<void>((resolveDead, _reject) => {
+      child.on('exit', () => resolveDead())
+    })
+    // I want to write this, but the 'spawn' event is not available until Node
+    // 15.1 and I don't feel like upgrading.
+    // child.on('spawn', () => resolve([child, deadPromise]))
+    child.on('error', (error: Error) => {
+      console.error("Error with server: " + error);
+      process.exit()
+    })
+    setTimeout(() => resolve([child, deadPromise]), 3000);
+  })
+}
+
+beforeAll(async () => {
+  browser = await puppeteer.launch({ headless: true })
+  if (process.env.CI) { [server, dead] = await spawnServer(); }
+}, 7000)
+
+afterAll(async () => {
+  await browser.close();
+  if (server) {
+    server.kill();
+    await dead;
+  }
+})
 
 describe("'Notes' page", () => {
 
