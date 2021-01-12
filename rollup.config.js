@@ -29,6 +29,28 @@ const postCssConfig = async () => ({
   minimize: production
 })
 
+
+function serve() {
+  let server;
+
+  function toExit() {
+    if (server) server.kill(0);
+  }
+
+  return {
+    writeBundle() {
+      if (server) return;
+      server = require('child_process').spawn('yarn', ['run', 'start'], {
+        stdio: ['ignore', 'inherit', 'inherit'],
+        shell: true
+      });
+
+      process.on('SIGTERM', toExit);
+      process.on('exit', toExit);
+    }
+  };
+}
+
 export default (async () => ({
   input: 'src/main.tsx',
   output: {
@@ -46,6 +68,7 @@ export default (async () => ({
     replace(replacements),
     production && (await import('rollup-plugin-terser')).terser({ ecma: 2015 }),
     (!production && !ci) && (await import('rollup-plugin-livereload')).default('public'),
+    !production && serve(),
   ],
   acornInjectPlugins: [ jsx() ],
   watch: { clearScreen: false }
