@@ -68,7 +68,7 @@ export default (async () => ({
     replace(replacements),
     production && (await import('rollup-plugin-terser')).terser({ ecma: 2015 }),
     (!production && !ci) && (await import('rollup-plugin-livereload')).default('public'),
-    !production && serve(),
+    (!production && !ci) && serve(),
   ],
   acornInjectPlugins: [ jsx() ],
   watch: { clearScreen: false }
