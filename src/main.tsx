@@ -176,7 +176,7 @@ const Notes = () => {
           <button
             class="rounded-lg bg-indigo-600 active:bg-indigo-700 text-gray-50 px-2 py-1 -ml-2 -mt-1"
             onClick={(_ev) => goTo(NewNote)}>New note</button>
-        <ul class="mt-4 space-y-2">
+        <ul class="mt-4 space-y-2" aria-label="Notes">
           <For each={Array.from(noteList())}>
             {id => <li><Link to={EditNote(id)}>{noteInfo[id].title}</Link></li>}
           </For>
