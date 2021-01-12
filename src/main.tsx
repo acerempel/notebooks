@@ -8,8 +8,15 @@ import { createClient, User } from '@supabase/supabase-js';
 import {
   createSignal, createState, createEffect,
   createContext, useContext, untrack,
-  createComputed, batch, JSX } from "solid-js";
+  JSX } from "solid-js";
 import { render, Switch, Match, Dynamic, For } from "solid-js/web";
+
+import { Children } from './types'
+import {
+  Route, urlOfRoute,
+  Page, NewNote, EditNote,
+  Router, RoutingContext,
+} from './router'
 
 import './styles.css';
 
@@ -20,25 +27,6 @@ function displayError(er: unknown) {
 const SUPABASE_URL = "https://qhqomieoafclafetsoxd.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYwODgyMzk3MSwiZXhwIjoxOTI0Mzk5OTcxfQ.ZBHH8NRe8eMVj8xuNUHoLuroL--zvKVO6YYsPS2zJqQ";
 const database = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-interface Route { page: Page, noteID?: string };
-function urlOfRoute(route: Partial<Route>): string {
-  let noteID = route.noteID;
-  return '/' + (route.page ?? Page.Notes) + (noteID ? '/' + noteID : '');
-}
-
-enum Page {
-  Notes = "notes",
-  SignIn = "signin",
-  SignUp = "signup",
-  Unknown = "404"
-}
-
-const AllNotes: Route = { page: Page.Notes, noteID: undefined }
-const NewNote: Route = { page: Page.Notes, noteID: "new" }
-const EditNote: (id: string) => Route = (noteID) => ({ page: Page.Notes, noteID })
-
-type Children = JSX.Element | JSX.Element[]
 
 type UserMaybe = User | null;
 
@@ -197,58 +185,17 @@ const UnknownURL = () => {
 };
 
 const App = () => {
-  return <UserContext><Routed>
+  return <UserContext>
+    <RoutingContext>
       <div class="my-4 mx-4 sm:mx-6 md:mx-8">
         <Main/>
       </div>
-  </Routed></UserContext>
+    </RoutingContext>
+  </UserContext>
 }
 
 const Main = () => {
   const { route } = useContext(Router);
-  return <Dynamic component={Pages[route.page].component}/>
-}
-
-interface PageInfo { title: string, component: () => JSX.Element };
-const Pages: Record<Page, PageInfo> = {
-  notes: { title: "Notes", component: Notes },
-  signup: { title: "Create an account", component: SignUp },
-  signin: { title: "Sign in", component: () => <p>Oh no!</p> },
-  '404': { title: "Page not found", component: UnknownURL }
-}
-
-const defaultRoute: Route = { page: Page.Notes }
-const Router = createContext({ route: defaultRoute, goTo(_route: Route) {} });
-
-// Which method of the HTML History API to use – either `history.pushState` or
-// `history.replaceState`.
-const enum History { Push, Replace };
-
-const Routed = (props: { children: Children }) => {
-  // We create a pair of reactive state nodes. The first is written to by the
-  // router and read by other components so they can react to changes in the
-  // route. The second is written to by other components whenever they want to
-  // navigate to a different route, and read by the router so that it can carry
-  // out the navigation and subsequently update the first state node. Simpler to
-  // understand the data flow than with a single state node.
-
-  // What is the current route.
-  const [route, setRoute] = createState(defaultRoute);
-
-  const initialRoute = routeOfWindowLocation();
-
-  // What route must we navigate to.
-  const [requestedPage, setPage] = createSignal(initialRoute.page, true);
-  const [requestedNoteID, setNoteID] = createSignal(initialRoute.noteID, true);
-
-  function routeOfWindowLocation(): Route { return routeOfRelativeURL(window.location.pathname); }
-
-  function goTo(route: Route) { batch(() => { setPage(route.page); setNoteID(route.noteID) }) }
-
-  window.onpopstate = (_event: PopStateEvent) => { setRoute(routeOfWindowLocation()) };
-
-  createComputed(() => setRoute("page", requestedPage()))
-  createComputed(() => setRoute("noteID", requestedNoteID()))
 
   createEffect((method) => {
     const newTitle = Pages[route.page].title;
@@ -260,9 +207,21 @@ const Routed = (props: { children: Children }) => {
     return History.Push;
   }, History.Replace);
 
-  const router = { route, goTo };
-  return <Router.Provider value={router}>{props.children}</Router.Provider>
+  return <Dynamic component={Pages[route.page].component}/>
 }
+
+interface PageInfo { title: string, component: () => JSX.Element };
+
+const Pages: Record<Page, PageInfo> = {
+  notes: { title: "Notes", component: Notes },
+  signup: { title: "Create an account", component: SignUp },
+  signin: { title: "Sign in", component: () => <p>Oh no!</p> },
+  '404': { title: "Page not found", component: UnknownURL }
+}
+
+// Which method of the HTML History API to use – either `history.pushState` or
+// `history.replaceState`.
+const enum History { Push, Replace };
 
 const Link = (props: { to: Route, children: Children, cssClass?: string }) => {
   const router = useContext(Router);
@@ -280,26 +239,4 @@ async function fetchNote(noteId: string) {
   const { data, error } = await database.from('notes').select().eq('id', noteId);
   if (error) { console.error(error); }
   return data;
-}
-
-function routeOfRelativeURL(url: string): Route {
-  // Split on the path separator; ignore the first element, as it is the empty string
-  // (because the path begins with a slash).
-  let pathParts = url.split('/').slice(1);
-  // Ignore a trailing slash.
-  if (pathParts[pathParts.length - 1] === "") { pathParts.pop() }
-  let page; let noteID = undefined;
-  // Can't do `pathParts === []`, because arrays are objects and are all distinct.
-  if (pathParts.length === 0) {
-    page = Page.Notes;
-  } else {
-    switch (pathParts[0]) {
-      case "notes": page = Page.Notes; break;
-      case "signup": page = Page.SignUp; break;
-      case "signin": page = Page.SignIn; break;
-      default: page = Page.Unknown;
-    }
-    noteID = pathParts[1] ?? undefined;
-  }
-  return { page, noteID };
 }
