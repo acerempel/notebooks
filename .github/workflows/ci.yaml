@@ -28,7 +28,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: yarn install --immutable
     - run: yarn run build
       env: {CI: true}
     - name: Run tests
