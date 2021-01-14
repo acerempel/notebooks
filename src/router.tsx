@@ -1,9 +1,13 @@
-import { Children } from './types'
+import {
+  Children, EditorMode, EditorModeRoute,
+  NoteID,
+} from './types'
 
 import {
   createSignal, createState,
   createContext,
-  createComputed, batch, } from "solid-js";
+  createComputed, batch,
+} from "solid-js";
 
 export {
   Route, urlOfRoute, routeOfRelativeURL,
@@ -11,11 +15,23 @@ export {
   Router, RoutingContext,
 }
 
-interface Route { page: Page, noteID?: string };
+interface NotesRoute { page: Page.Notes, editorMode: EditorModeRoute }
+type Route = NotesRoute | { page: Exclude<Page, NotesRoute["page"]> }
 
-function urlOfRoute(route: Partial<Route>): string {
-  let noteID = route.noteID;
-  return '/' + (route.page ?? Page.Notes) + (noteID ? '/' + noteID : '');
+function urlOfRoute(route: Route): string {
+  let comp1 = route.page;
+  let comp2 = "";
+  if (route.page === Page.Notes) {
+    switch (route.editorMode.mode) {
+      case EditorMode.New:
+        comp2 = "/new"; break;
+      case EditorMode.Edit:
+        comp2 = '/' + route.editorMode.noteID; break;
+      case EditorMode.Disabled:
+        break;
+    }
+  }
+  return '/' + comp1 + comp2
 }
 
 function routeOfRelativeURL(url: string): Route {
@@ -24,20 +40,21 @@ function routeOfRelativeURL(url: string): Route {
   let pathParts = url.split('/').slice(1);
   // Ignore a trailing slash.
   if (pathParts[pathParts.length - 1] === "") { pathParts.pop() }
-  let page; let noteID = undefined;
   // Can't do `pathParts === []`, because arrays are objects and are all distinct.
   if (pathParts.length === 0) {
-    page = Page.Notes;
+    return AllNotes;
   } else {
     switch (pathParts[0]) {
-      case "notes": page = Page.Notes; break;
-      case "signup": page = Page.SignUp; break;
-      case "signin": page = Page.SignIn; break;
-      default: page = Page.Unknown;
+      case Page.Notes:
+        let subroute = pathParts[1];
+        if (subroute === EditorMode.New) { return NewNote }
+        else if (subroute) { return EditNote(subroute) }
+        else { return AllNotes }
+      case Page.SignUp: return { page: Page.SignUp };
+      case Page.SignIn: return { page: Page.SignIn };
+      default: return { page: Page.Unknown }
     }
-    noteID = pathParts[1] ?? undefined;
   }
-  return { page, noteID };
 }
 
 enum Page {
@@ -47,38 +64,31 @@ enum Page {
   Unknown = "404"
 }
 
-const AllNotes: Route = { page: Page.Notes, noteID: undefined }
-const NewNote: Route = { page: Page.Notes, noteID: "new" }
-const EditNote: (id: string) => Route = (noteID) => ({ page: Page.Notes, noteID })
+const AllNotes: NotesRoute = { page: Page.Notes, editorMode: { mode: EditorMode.Disabled } }
+const NewNote: NotesRoute = { page: Page.Notes, editorMode: { mode: EditorMode.New } }
+const EditNote: (id: NoteID) => NotesRoute =
+  (noteID) => ({ page: Page.Notes, editorMode: { mode: EditorMode.Edit, noteID } })
 
-const defaultRoute: Route = { page: Page.Notes }
-const Router = createContext({ route: defaultRoute, goTo(_route: Route) {} });
+const defaultRoute: Route = AllNotes
+const Router = createContext({ route: defaultRoute as Route, goTo(_route: Route) {} });
 
 const RoutingContext = (props: { children: Children }) => {
-  // We create a pair of reactive state nodes. The first is written to by the
-  // router and read by other components so they can react to changes in the
-  // route. The second is written to by other components whenever they want to
-  // navigate to a different route, and read by the router so that it can carry
-  // out the navigation and subsequently update the first state node. Simpler to
-  // understand the data flow than with a single state node.
 
   // What is the current route.
-  const [route, setRoute] = createState(defaultRoute);
+  const [route, setRoute] = createState(defaultRoute as Route);
 
   const initialRoute = routeOfWindowLocation();
 
   // What route must we navigate to.
   const [requestedPage, setPage] = createSignal(initialRoute.page, true);
-  const [requestedNoteID, setNoteID] = createSignal(initialRoute.noteID, true);
 
   function routeOfWindowLocation(): Route { return routeOfRelativeURL(window.location.pathname); }
 
-  function goTo(route: Route) { batch(() => { setPage(route.page); setNoteID(route.noteID) }) }
+  function goTo(route: Route) { setRoute(route) }
 
   window.onpopstate = (_event: PopStateEvent) => { setRoute(routeOfWindowLocation()) };
 
   createComputed(() => setRoute("page", requestedPage()))
-  createComputed(() => setRoute("noteID", requestedNoteID()))
 
   const router = { route, goTo };
   return <Router.Provider value={router}>{props.children}</Router.Provider>
