@@ -10,6 +10,11 @@ export enum EditorMode {
   Disabled = "off",
 }
 
+// Which method of the HTML History API to use – either `history.pushState` or
+// `history.replaceState`.
+export const enum HistoryChangeMode { Push, Replace };
+
+
 export type NewEditorMode = { mode: EditorMode.New }
 export type EditEditorMode = { mode: EditorMode.Edit, noteID: NoteID }
 export type DisabledEditorMode = { mode: EditorMode.Disabled }

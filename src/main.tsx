@@ -3,71 +3,27 @@ import {EditorView} from "prosemirror-view"
 import {schema} from "prosemirror-schema-basic"
 import {plugins} from "./editor/plugins"
 
-import { createClient, User } from '@supabase/supabase-js';
-
 import {
   createSignal, createState, createEffect,
-  createContext, useContext, untrack,
-  JSX } from "solid-js";
-import { render, Switch, Match, Dynamic, For } from "solid-js/web";
+  useContext, untrack, onMount,
+} from "solid-js";
+import { render, For } from "solid-js/web";
 
-import { Children } from './types'
+import { Children, EditorMode } from './types'
 import {
   Route, urlOfRoute,
-  Page, NewNote, EditNote,
+  NewNote, EditNote,
   Router, RoutingContext,
 } from './router'
 
 import './styles.css';
 
-function displayError(er: unknown) {
-  console.error(er); // TODO show it in the DOM
-}
-
-const SUPABASE_URL = "https://qhqomieoafclafetsoxd.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYwODgyMzk3MSwiZXhwIjoxOTI0Mzk5OTcxfQ.ZBHH8NRe8eMVj8xuNUHoLuroL--zvKVO6YYsPS2zJqQ";
-const database = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-type UserMaybe = User | null;
-
-const ActiveUser = createContext({
-  user: () => null as UserMaybe,
-  setUser: (_: UserMaybe) => null as UserMaybe
-});
-
-const UserContext = (props: { children: Children }) => {
-  const [user, setUser] = createSignal(null as UserMaybe);
-  return <ActiveUser.Provider value={{ user, setUser }}>{props.children}</ActiveUser.Provider>
-}
-
-const SignUp = () => {
-  const { setUser } = useContext(ActiveUser);
-  async function doSignUp(event: Event) {
-    event.preventDefault();
-    let { user, error } = await database.auth.signUp({ email: email.value, password: password.value });
-    if (error) { displayError(error) }
-    else { setUser(user); }
-  }
-  // @ts-ignore: These get assigned before use because of the `ref` thing.
-  // TypeScript also complains if we declare without assigning here, and that
-  // can't be turned off with ts-ignore inside JSX, apparently.
-  let email: HTMLInputElement = undefined, password: HTMLInputElement = undefined;
-  return <main>
-    <h1>Create an account</h1>
-    <form onSubmit={doSignUp}>
-      <label>Email <input type="email" ref={email}/></label>
-      <label>Password <input type="password" ref={password}/></label>
-      <button type="submit">Sign up</button>
-    </form>
-  </main>;
-};
-
 type NoteInfo = { title: string }
+
 const Notes = () => {
   const notes = new Map<string,EditorState>();
   const [noteList, setNoteList] = createSignal(new Set<string>());
   const [noteInfo, setNoteInfo] = createState({} as Record<string,NoteInfo>);
-  const { user } = useContext(ActiveUser);
   const { route, goTo } = useContext(Router);
 
   let activeNoteID: string | null = null;
@@ -105,11 +61,11 @@ const Notes = () => {
   // @ts-ignore: See above.
   let editorNode: HTMLElement = undefined;
   let editorView: EditorView;
-  createEffect(() => { editorView = initializeEditorView(editorNode) });
+  onMount(() => { editorView = initializeEditorView(editorNode) });
 
   createEffect(() => {
-    let noteID = route.noteID;
-    if (noteID === "new") { // Creating a new note
+    let editorMode = route.editorMode;
+    if (editorMode.mode === EditorMode.New) {
       if (activeNoteID) { // We were already editing a note
         // Save the note we were just editing.
         notes.set(activeNoteID, editorView.state);
@@ -120,18 +76,20 @@ const Notes = () => {
       }
       document.title = "New note";
       editorView.focus();
-    } else if (noteID && noteID !== activeNoteID) {
-      // We are editing a particular note – not the one we were already editing,
-      // if any. (If it was the one we were already editing, there is no need to
-      // do anything.)
-      // If we were already editing a note, save it.
-      if (activeNoteID) notes.set(activeNoteID, editorView.state);
-      activeNoteID = noteID;
-      let noteState = notes.get(noteID);
-      // If we know of this note, show it; if not, create a fresh note.
-      noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
-    } // Otherwise, we are already editing the requested note; do nothing.
-    else if (!noteID) {
+    } else if (editorMode.mode === EditorMode.Edit) {
+      let noteID = editorMode.noteID;
+      if (noteID !== activeNoteID) {
+        // We are editing a particular note – not the one we were already editing,
+        // if any. (If it was the one we were already editing, there is no need to
+        // do anything.)
+        // If we were already editing a note, save it.
+        if (activeNoteID) notes.set(activeNoteID, editorView.state);
+        activeNoteID = noteID;
+        let noteState = notes.get(noteID);
+        // If we know of this note, show it; if not, create a fresh note.
+        noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
+      }
+    } else if (editorMode.mode === EditorMode.Disabled) { // Otherwise, we are already editing the requested note; do nothing.
       // We are not editing any note.
       if (activeNoteID) {
         // We were just now, though. Make sure to
@@ -146,18 +104,8 @@ const Notes = () => {
   });
 
   return <>
-      <header class="flex">
+      <header>
         <h1 class="font-bold">Notes</h1>
-        <Switch>
-          <Match when={user() !== null}>
-              <strong class="ml-auto">{user()?.email}</strong>
-              <a class="ml-4" href="#">Sign out</a>
-          </Match>
-          <Match when={user() === null}>
-            <Link cssClass="ml-auto" to={{page: Page.SignUp}}>Create an account</Link>
-            <Link cssClass="ml-4" to={{page: Page.SignIn}}>Sign in</Link>
-          </Match>
-        </Switch>
       </header>
       <section class="flex mt-4">
         <nav class="flex-initial w-52">
@@ -170,58 +118,24 @@ const Notes = () => {
           </For>
       </ul></nav>
       <main class="flex-auto w-96 ml-4">
-        <article class="prose" style={{ display: route.noteID ? 'block' : 'none' }} ref={editorNode}></article>
+        <article
+          class="prose"
+          style={{ display: route.editorMode.mode === EditorMode.Disabled ? 'none' : 'block' }}
+          ref={editorNode}>
+        </article>
       </main>
       </section>
     </>;
 };
 
-const UnknownURL = () => {
-  const { route } = useContext(Router);
-  return <main>
-    <h1>Page not found!</h1>
-    <p>The url {urlOfRoute(route)} does not correspond to any page.</p>
-  </main>
-};
-
 const App = () => {
-  return <UserContext>
-    <RoutingContext>
-      <div class="my-4 mx-4 sm:mx-6 md:mx-8">
-        <Main/>
-      </div>
-    </RoutingContext>
-  </UserContext>
+  return <RoutingContext>
+    <div class="my-4 mx-4 sm:mx-6 md:mx-8">
+      <Notes/>
+    </div>
+  </RoutingContext>
+
 }
-
-const Main = () => {
-  const { route } = useContext(Router);
-
-  createEffect((method) => {
-    const newTitle = Pages[route.page].title;
-    const newURL = urlOfRoute(route);
-    method === History.Push
-      ? history.pushState(null, newTitle, newURL)
-      : history.replaceState(null, newTitle, newURL);
-    document.title = newTitle;
-    return History.Push;
-  }, History.Replace);
-
-  return <Dynamic component={Pages[route.page].component}/>
-}
-
-interface PageInfo { title: string, component: () => JSX.Element };
-
-const Pages: Record<Page, PageInfo> = {
-  notes: { title: "Notes", component: Notes },
-  signup: { title: "Create an account", component: SignUp },
-  signin: { title: "Sign in", component: () => <p>Oh no!</p> },
-  '404': { title: "Page not found", component: UnknownURL }
-}
-
-// Which method of the HTML History API to use – either `history.pushState` or
-// `history.replaceState`.
-const enum History { Push, Replace };
 
 const Link = (props: { to: Route, children: Children, cssClass?: string }) => {
   const router = useContext(Router);
@@ -234,9 +148,3 @@ const Link = (props: { to: Route, children: Children, cssClass?: string }) => {
 }
 
 render(() => <App/>, document.body);
-
-async function fetchNote(noteId: string) {
-  const { data, error } = await database.from('notes').select().eq('id', noteId);
-  if (error) { console.error(error); }
-  return data;
-}

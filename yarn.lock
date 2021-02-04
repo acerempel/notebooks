@@ -680,18 +680,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-replace@npm:^2.3.4":
-  version: 2.3.4
-  resolution: "@rollup/plugin-replace@npm:2.3.4"
-  dependencies:
-    "@rollup/pluginutils": ^3.1.0
-    magic-string: ^0.25.7
-  peerDependencies:
-    rollup: ^1.20.0 || ^2.0.0
-  checksum: 97ae11600a959b7668105d9e28801319f9158b01a1d9dbf4f910136491463d8798c1bb1d62e47bf04d5ff08c9c5b3f333aa39ccad57a4e5531d8edaa38ffd74e
-  languageName: node
-  linkType: hard
-
 "@rollup/plugin-typescript@npm:^8.1.0":
   version: 8.1.0
   resolution: "@rollup/plugin-typescript@npm:8.1.0"
@@ -734,86 +722,6 @@ __metadata:
   dependencies:
     "@sinonjs/commons": ^1.7.0
   checksum: 64458b908773638dda08b555a00e6fbbbc679735348291dc1b7f437ada2f60242537fdc48e4ee82d2573d86984ec87e755b66a96c0ed9ebf0f46b4c6687ccde2
-  languageName: node
-  linkType: hard
-
-"@supabase/gotrue-js@^1.9.2":
-  version: 1.9.2
-  resolution: "@supabase/gotrue-js@npm:1.9.2"
-  dependencies:
-    cross-fetch: ^3.0.6
-  checksum: b7fac484f219854e7cb0044d1daff31646515db2bc288713a5169ce17f3086bf8519af24675f5c9c79c0fe1aeca7a64756f82669ddf1298a67724970d1e1daf0
-  languageName: node
-  linkType: hard
-
-"@supabase/gotrue-js@patch:@supabase/gotrue-js@^1.9.2#./patches/gotrue-js.patch::locator=josquin%40workspace%3A.":
-  version: 1.9.2
-  resolution: "@supabase/gotrue-js@patch:@supabase/gotrue-js@npm%3A1.9.2#./patches/gotrue-js.patch::version=1.9.2&hash=971749&locator=josquin%40workspace%3A."
-  dependencies:
-    cross-fetch: ^3.0.6
-  checksum: 2d6e44c5684f62ff153ee2bf45518d425ff84adbf215eef55d510f9a8b976b0e0f751d38a0605b32f6466fcb059228a27543491a3fc3dbc0db2120751cc6751b
-  languageName: node
-  linkType: hard
-
-"@supabase/postgrest-js@^0.22.0":
-  version: 0.22.0
-  resolution: "@supabase/postgrest-js@npm:0.22.0"
-  dependencies:
-    cross-fetch: ^3.0.6
-  checksum: f9219b973391fa82ff7f733102e2e67fa0323b303fff11b7e1c5f1332300e32025edab8b232b21fb611a73661f6917f682f5ddfb37fd92bc74035dde40c7142c
-  languageName: node
-  linkType: hard
-
-"@supabase/postgrest-js@patch:@supabase/postgrest-js@^0.22.0#./patches/postgrest-js.patch::locator=josquin%40workspace%3A.":
-  version: 0.22.0
-  resolution: "@supabase/postgrest-js@patch:@supabase/postgrest-js@npm%3A0.22.0#./patches/postgrest-js.patch::version=0.22.0&hash=767e7d&locator=josquin%40workspace%3A."
-  dependencies:
-    cross-fetch: ^3.0.6
-  checksum: 75df1d1313af9fee97e7bf3c58e26f0e811e272a680329e127afd55117cb6c1e981facfc458edb09b4a631a71dd82d67a39502c5dcf6d54d0e95ee8f8eb3d09e
-  languageName: node
-  linkType: hard
-
-"@supabase/realtime-js@^1.0.6":
-  version: 1.0.6
-  resolution: "@supabase/realtime-js@npm:1.0.6"
-  dependencies:
-    "@types/websocket": ^1.0.1
-    query-string: ^6.12.1
-    websocket: ^1.0.31
-  checksum: f4c0741928d9bef2fda425ad83907e86b6f7da7afdb601d963b39f86e89e7c30c3a325263f918687f4ece9a02cafd435860c37f44390af5276ebca281d67cbc8
-  languageName: node
-  linkType: hard
-
-"@supabase/realtime-js@patch:@supabase/realtime-js@^1.0.6#./patches/realtime-js.patch::locator=josquin%40workspace%3A.":
-  version: 1.0.6
-  resolution: "@supabase/realtime-js@patch:@supabase/realtime-js@npm%3A1.0.6#./patches/realtime-js.patch::version=1.0.6&hash=ad227c&locator=josquin%40workspace%3A."
-  dependencies:
-    "@types/websocket": ^1.0.1
-    query-string: ^6.12.1
-    websocket: ^1.0.31
-  checksum: 947cdbd801c970f45ed9f197cb45c5720f0c24134e8e701822099b4b583ea8b62bd657d44884e6305defcd857e8d21d3c113db4043905c714ad3915be127296e
-  languageName: node
-  linkType: hard
-
-"@supabase/supabase-js@^1.1.2":
-  version: 1.1.2
-  resolution: "@supabase/supabase-js@npm:1.1.2"
-  dependencies:
-    "@supabase/gotrue-js": ^1.9.1
-    "@supabase/postgrest-js": ^0.21.2
-    "@supabase/realtime-js": ^1.0.6
-  checksum: ad1246d2ffd259f4d554095c8c7c434fad87d3ac6352ea2d414bcd32e9ae0a796be4bb02d76955b650b163d061c29a2215ec16d3cdc2ad0d452848b23e2be398
-  languageName: node
-  linkType: hard
-
-"@supabase/supabase-js@patch:@supabase/supabase-js@^1.1.2#./patches/supabase-js.patch::locator=josquin%40workspace%3A.":
-  version: 1.1.2
-  resolution: "@supabase/supabase-js@patch:@supabase/supabase-js@npm%3A1.1.2#./patches/supabase-js.patch::version=1.1.2&hash=00858c&locator=josquin%40workspace%3A."
-  dependencies:
-    "@supabase/gotrue-js": ^1.9.1
-    "@supabase/postgrest-js": ^0.21.2
-    "@supabase/realtime-js": ^1.0.6
-  checksum: f0c497f08072eec96ae74cce23516c5008479ffc312e5110796145d58bd96770f4ab6252d07c13597676f557937cbc8bd5df77a807edc7038a8992c36e8bbf65
   languageName: node
   linkType: hard
 
@@ -1094,15 +1002,6 @@ __metadata:
   version: 2.0.0
   resolution: "@types/stack-utils@npm:2.0.0"
   checksum: 662312302e07685c99a1c45c6753eb997b31d2af66e646c5937f62d593a63a111289503d0b06a8d1e6f3922b67fc2ed94889d84653a08861a7fee67b81ce5b92
-  languageName: node
-  linkType: hard
-
-"@types/websocket@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@types/websocket@npm:1.0.1"
-  dependencies:
-    "@types/node": "*"
-  checksum: 93d407970a6487290f8bace3b6de40d6f35f092386e5fba8981c3cb5ee60b155da419ab98007a3991c4a2e27eee948c5f98786a13619359b42a4a04aaf7bdf27
   languageName: node
   linkType: hard
 
@@ -1701,16 +1600,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bufferutil@npm:^4.0.1":
-  version: 4.0.2
-  resolution: "bufferutil@npm:4.0.2"
-  dependencies:
-    node-gyp: latest
-    node-gyp-build: ^4.2.0
-  checksum: cb71bbdc609b6de49aaf2ff45fac5c64c55ff965f6bfe6f2bc357cc05afce69206a9ca1567011951b3f18b54dca24ef21be407d8ffce5a38a5f87bc2416140dd
-  languageName: node
-  linkType: hard
-
 "builtin-modules@npm:^3.1.0":
   version: 3.2.0
   resolution: "builtin-modules@npm:3.2.0"
@@ -2161,15 +2050,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-fetch@npm:^3.0.6":
-  version: 3.0.6
-  resolution: "cross-fetch@npm:3.0.6"
-  dependencies:
-    node-fetch: 2.6.1
-  checksum: a491ad1b89988a351f8b8b252b68a5e653636d911042648c43a806cf7575ff043379a80d6269102ca60ec633af0b49ca4c83536007793bb0e65e491769f70d9d
-  languageName: node
-  linkType: hard
-
 "cross-spawn@npm:^6.0.0":
   version: 6.0.5
   resolution: "cross-spawn@npm:6.0.5"
@@ -2382,16 +2262,6 @@ __metadata:
   dependencies:
     cssom: ~0.3.6
   checksum: a778180d2f5eef44742b7083997a0ad6e59eee016724ceac4d6229e48842d3c5ebbb55dc02c555f793bdc486254f6eef8d2049c1815e8fc74514e3eb827d49ec
-  languageName: node
-  linkType: hard
-
-"d@npm:1, d@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "d@npm:1.0.1"
-  dependencies:
-    es5-ext: ^0.10.50
-    type: ^1.0.1
-  checksum: cf9b770965fa4876f7aff46784e4f1a1ee71cc5df7e05c9c36bee52a74340b312b6f7ab224c8bfcc83f4b18c6f6a24e7b50bcd449ba4464c1df69874941324ae
   languageName: node
   linkType: hard
 
@@ -2742,38 +2612,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es5-ext@npm:^0.10.35, es5-ext@npm:^0.10.50":
-  version: 0.10.53
-  resolution: "es5-ext@npm:0.10.53"
-  dependencies:
-    es6-iterator: ~2.0.3
-    es6-symbol: ~3.1.3
-    next-tick: ~1.0.0
-  checksum: 99e8115c2f99674d0defc1e077bb0061cd9e1fc996e93605f83441cc5b3b200b7b3646f9cda9313aa877a05c47b4577ead99a26177136a0ca3f208f67a7b4418
-  languageName: node
-  linkType: hard
-
-"es6-iterator@npm:~2.0.3":
-  version: 2.0.3
-  resolution: "es6-iterator@npm:2.0.3"
-  dependencies:
-    d: 1
-    es5-ext: ^0.10.35
-    es6-symbol: ^3.1.1
-  checksum: 1880ce31210da874cbb92b404c3128bdf68f616f3a902b2ca1d12f268aaedb11c5e6a2d9d364cde762de0130652a0474ba91abc09fa35f4abf6a8f22a592265e
-  languageName: node
-  linkType: hard
-
-"es6-symbol@npm:^3.1.1, es6-symbol@npm:~3.1.3":
-  version: 3.1.3
-  resolution: "es6-symbol@npm:3.1.3"
-  dependencies:
-    d: ^1.0.1
-    ext: ^1.1.2
-  checksum: 0915d72de8760b56b69ca4360276123a4f61de5a3172fe340ce9288271cf48bcebe3ee46ca8ee0f2fd73206bbbefa7c4a40a6673d278a87c97d3a155de778931
-  languageName: node
-  linkType: hard
-
 "escalade@npm:^3.1.1":
   version: 3.1.1
   resolution: "escalade@npm:3.1.1"
@@ -2938,15 +2776,6 @@ __metadata:
     jest-message-util: ^26.6.2
     jest-regex-util: ^26.0.0
   checksum: a4ec4cbafac8b05eb02a8af5f086dede84a3a701abbfdafeadca24a1d286bd07035b32b2864a6ff012a733009beb0b96c10469b40832c5ee0d2dd0bb6b50a5b0
-  languageName: node
-  linkType: hard
-
-"ext@npm:^1.1.2":
-  version: 1.4.0
-  resolution: "ext@npm:1.4.0"
-  dependencies:
-    type: ^2.0.0
-  checksum: c94102371fecdee9f48d1acac2d0e49d49906af457c79d1d7cf1a0a14317ed3e4c99cd8a2e6f9a00e93d54306ee2872e2542edd0aa58bccc4fc72aa429ef215c
   languageName: node
   linkType: hard
 
@@ -4544,9 +4373,7 @@ fsevents@~2.1.2:
     "@rollup/plugin-commonjs": ^17.0.0
     "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^11.0.1
-    "@rollup/plugin-replace": ^2.3.4
     "@rollup/plugin-typescript": ^8.1.0
-    "@supabase/supabase-js": "patch:@supabase/supabase-js@^1.1.2#./patches/supabase-js.patch"
     "@tailwindcss/typography": ^0.3.1
     "@types/babel__core": ^7
     "@types/jest": ^26.0.20
@@ -5179,13 +5006,6 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"next-tick@npm:~1.0.0":
-  version: 1.0.0
-  resolution: "next-tick@npm:1.0.0"
-  checksum: 18db63c447c6e65a23235b91da9ccdae53f74f9194cfbc71a1fd3170cdf81bd157d9676e47c2ea4ea5bd20e09fb019917b0a45d8e1a63e377175fc083f285234
-  languageName: node
-  linkType: hard
-
 "nice-try@npm:^1.0.4":
   version: 1.0.5
   resolution: "nice-try@npm:1.0.5"
@@ -5202,21 +5022,10 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:2.6.1, node-fetch@npm:^2.6.1":
+"node-fetch@npm:^2.6.1":
   version: 2.6.1
   resolution: "node-fetch@npm:2.6.1"
   checksum: cbb171635e538162b977eac5dfe7a1e07a9a02e991924377a6435502291e2f823d306b95aabc455caebf4a118ccf836868462bc70ccc3095af02bb9da61fda37
-  languageName: node
-  linkType: hard
-
-"node-gyp-build@npm:^4.2.0":
-  version: 4.2.3
-  resolution: "node-gyp-build@npm:4.2.3"
-  bin:
-    node-gyp-build: bin.js
-    node-gyp-build-optional: optional.js
-    node-gyp-build-test: build-test.js
-  checksum: 8512c25498b1605dbe9d2605cac7f8996d18c35097b3079b232674b0f3b8f1559be6f531ec3a00a94f90a0a69ccc452edb62f8f6dfff8caa3abe4b729cc21b06
   languageName: node
   linkType: hard
 
@@ -6517,17 +6326,6 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"query-string@npm:^6.12.1":
-  version: 6.13.7
-  resolution: "query-string@npm:6.13.7"
-  dependencies:
-    decode-uri-component: ^0.2.0
-    split-on-first: ^1.0.0
-    strict-uri-encode: ^2.0.0
-  checksum: b6d9ef79b77640456e764dcb427591e6079616141aa68f1dae444387864cbc44f945d766085a1ebef1e0fa1b0f8faa8925a96eaebf933119b97bacc12c5d22e5
-  languageName: node
-  linkType: hard
-
 "randombytes@npm:^2.1.0":
   version: 2.1.0
   resolution: "randombytes@npm:2.1.0"
@@ -7259,13 +7057,6 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"split-on-first@npm:^1.0.0":
-  version: 1.1.0
-  resolution: "split-on-first@npm:1.1.0"
-  checksum: 2ef26fee62665be9547e8035734b856e658b08fd13e70271a2f258147f29d1f18e12b5cb7f7670d83e113c172a9c5fe3d87d9d7c02a1d3d57824818d75d942ab
-  languageName: node
-  linkType: hard
-
 "split-string@npm:^3.0.1, split-string@npm:^3.0.2":
   version: 3.1.0
   resolution: "split-string@npm:3.1.0"
@@ -7333,13 +7124,6 @@ fsevents@~2.1.2:
   version: 1.1.1
   resolution: "stealthy-require@npm:1.1.1"
   checksum: f24a9bc613817dea37afcbf64578f2ba0195916d906ebdaa1c1d5b8e9d51fd462cbf4c61ae04217babd0cf662e6c0115fd972dffa8e62a7f6f44f3109fb4c796
-  languageName: node
-  linkType: hard
-
-"strict-uri-encode@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "strict-uri-encode@npm:2.0.0"
-  checksum: 775012e88b9d8dff939d514bf376d615a15e8228a5dd587a94ac3c71fce41aa3635cd808aa796e2c1cd33f3f2fe2fbf89b74ee18a504a1905efa1854311e04bb
   languageName: node
   linkType: hard
 
@@ -7873,20 +7657,6 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"type@npm:^1.0.1":
-  version: 1.2.0
-  resolution: "type@npm:1.2.0"
-  checksum: 1589416fd9d0a0a1bf18c62dbc7452b0f22017efd5bfc2912050bb57421b084801563ff13b3e3efd60df45590f23e1f3d27d892aeeec9b3ed142c917a4858812
-  languageName: node
-  linkType: hard
-
-"type@npm:^2.0.0":
-  version: 2.1.0
-  resolution: "type@npm:2.1.0"
-  checksum: c58a014169b047408ada691db7965506661ed81d47386b23b533696d943dde596ee4708f955cdd7246230a5cd01b4bc11b20875c1ddee5d2fe2fb9dda7968b7a
-  languageName: node
-  linkType: hard
-
 "typedarray-to-buffer@npm:^3.1.5":
   version: 3.1.5
   resolution: "typedarray-to-buffer@npm:3.1.5"
@@ -8003,16 +7773,6 @@ typescript@^4.1.3:
   version: 3.1.1
   resolution: "use@npm:3.1.1"
   checksum: 8dd3bdeeda53864c779e0fa8d799064739708f80b45d06fa48a1a6ba192dc3f9e3266d4556f223cd718d27aedfd957922152e7463c00ac46e185f8331353fb6f
-  languageName: node
-  linkType: hard
-
-"utf-8-validate@npm:^5.0.2":
-  version: 5.0.3
-  resolution: "utf-8-validate@npm:5.0.3"
-  dependencies:
-    node-gyp: latest
-    node-gyp-build: ^4.2.0
-  checksum: 0204294d8584ffba171c6b0f97613a4a9c882152067672b45f533f2c640786042ee2b4aeb5f390d6a741eb93b0dc925404652a78c29f9348e6cd422cbdaa44ca
   languageName: node
   linkType: hard
 
@@ -8137,20 +7897,6 @@ typescript@^4.1.3:
   version: 6.1.0
   resolution: "webidl-conversions@npm:6.1.0"
   checksum: 0ded175044ec0a06f41014b9ffc36a67eb22bff53b9cb43fa1e9d05eaded43a100d993a8179d3a9f0f820ff1e5b812107a97c8643b600a6ab5bef1e11fcae66b
-  languageName: node
-  linkType: hard
-
-"websocket@npm:^1.0.31":
-  version: 1.0.33
-  resolution: "websocket@npm:1.0.33"
-  dependencies:
-    bufferutil: ^4.0.1
-    debug: ^2.2.0
-    es5-ext: ^0.10.50
-    typedarray-to-buffer: ^3.1.5
-    utf-8-validate: ^5.0.2
-    yaeti: ^0.0.6
-  checksum: 1a68893178fb1436837a231ff6f6f382c4d971096d14426ed03e7933c7a6d15c3bb3ceb360d59cfd4f63e1cd6d204592e5a35dbe01d4a8ff247d60b6545ad25d
   languageName: node
   linkType: hard
 
@@ -8305,13 +8051,6 @@ typescript@^4.1.3:
   version: 4.0.1
   resolution: "y18n@npm:4.0.1"
   checksum: e589620d8d668d696e74730a83731a36a8d782c50379386b142e5b8287388a6ebaf28528e84201c68c206629faed71362c79b201b398eb0c69aa1737635678dd
-  languageName: node
-  linkType: hard
-
-"yaeti@npm:^0.0.6":
-  version: 0.0.6
-  resolution: "yaeti@npm:0.0.6"
-  checksum: fa9beece5a26aac7a2fa71ced85f660184a936883cc16fdd4f7a6bf2f2ea3454af6ceff77128be76ddeb6578d955a5282670187d439a3ee77733d0c12a18de1c
   languageName: node
   linkType: hard
 

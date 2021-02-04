@@ -1,5 +1,4 @@
 import resolve from '@rollup/plugin-node-resolve';
-import replace from "@rollup/plugin-replace";
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import { babel } from '@rollup/plugin-babel';
@@ -11,14 +10,6 @@ import extend from 'postcss-extend-rule';
 
 const ci = process.env.CI;
 const production = !process.env.ROLLUP_WATCH && !ci;
-
-const replacements = {
-  'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
-  'process.env.GOTRUE_URL': JSON.stringify(process.env.GOTRUE_URL),
-  'process.env.AUDIENCE': JSON.stringify(process.env.AUDIENCE),
-  'process.env.EXPIRY_MARGIN': JSON.stringify(process.env.EXPIRY_MARGIN),
-  'process.env.STORAGE_KEY': JSON.stringify(process.env.STORAGE_KEY)
-};
 
 const postCssConfig = async () => ({
   extract: 'styles.css',
@@ -65,7 +56,6 @@ export default (async () => ({
     babel({ babelHelpers: "bundled", extensions: ['.js', '.jsx', '.ts', '.tsx'] }),
     postcss(await postCssConfig()),
     json(),
-    replace(replacements),
     production && (await import('rollup-plugin-terser')).terser({ ecma: 2015 }),
     (!production && !ci) && (await import('rollup-plugin-livereload')).default('public'),
     (!production && !ci) && serve(),

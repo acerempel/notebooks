@@ -1,12 +1,12 @@
 import {
   Children, EditorMode, EditorModeRoute,
-  NoteID,
+  NoteID, HistoryChangeMode,
 } from './types'
 
 import {
-  createSignal, createState,
+  createState,
   createContext,
-  createComputed, batch,
+  reconcile
 } from "solid-js";
 
 export {
@@ -16,7 +16,7 @@ export {
 }
 
 interface NotesRoute { page: Page.Notes, editorMode: EditorModeRoute }
-type Route = NotesRoute | { page: Exclude<Page, NotesRoute["page"]> }
+type Route = NotesRoute
 
 function urlOfRoute(route: Route): string {
   let comp1 = route.page;
@@ -50,18 +50,13 @@ function routeOfRelativeURL(url: string): Route {
         if (subroute === EditorMode.New) { return NewNote }
         else if (subroute) { return EditNote(subroute) }
         else { return AllNotes }
-      case Page.SignUp: return { page: Page.SignUp };
-      case Page.SignIn: return { page: Page.SignIn };
-      default: return { page: Page.Unknown }
+      default: throw new Error(`Unknown URL for client-side router: ${url}`)
     }
   }
 }
 
 enum Page {
   Notes = "notes",
-  SignIn = "signin",
-  SignUp = "signup",
-  Unknown = "404"
 }
 
 const AllNotes: NotesRoute = { page: Page.Notes, editorMode: { mode: EditorMode.Disabled } }
@@ -70,27 +65,46 @@ const EditNote: (id: NoteID) => NotesRoute =
   (noteID) => ({ page: Page.Notes, editorMode: { mode: EditorMode.Edit, noteID } })
 
 const defaultRoute: Route = AllNotes
-const Router = createContext({ route: defaultRoute as Route, goTo(_route: Route) {} });
+const Router = createContext({
+  route: defaultRoute as Route,
+  goTo(_route: Route, _title?: string, _method?: HistoryChangeMode) {},
+  replaceLocation(_route: Route, _title?: string) {}
+});
 
 const RoutingContext = (props: { children: Children }) => {
 
-  // What is the current route.
-  const [route, setRoute] = createState(defaultRoute as Route);
-
   const initialRoute = routeOfWindowLocation();
 
-  // What route must we navigate to.
-  const [requestedPage, setPage] = createSignal(initialRoute.page, true);
+  // What is the current route.
+  const [route, setRoute] = createState(initialRoute);
 
-  function routeOfWindowLocation(): Route { return routeOfRelativeURL(window.location.pathname); }
+  function routeOfWindowLocation(): Route {
+    return routeOfRelativeURL(window.location.pathname);
+  }
 
-  function goTo(route: Route) { setRoute(route) }
+  function goTo(
+    newRoute: Route, title = "",
+    method: HistoryChangeMode = HistoryChangeMode.Push
+  ) {
+    const url = urlOfRoute(newRoute);
+    switch (method) {
+      case HistoryChangeMode.Push:
+        history.pushState(null, title, url); break;
+      case HistoryChangeMode.Replace:
+        history.pushState(null, title, url); break;
+    }
+    setRoute(reconcile(newRoute))
+  }
 
-  window.onpopstate = (_event: PopStateEvent) => { setRoute(routeOfWindowLocation()) };
+  window.onpopstate = (_event: PopStateEvent) => {
+    setRoute(routeOfWindowLocation())
+  };
 
-  createComputed(() => setRoute("page", requestedPage()))
+  function replaceLocation(newRoute: Route, title = "") {
+    history.replaceState(null, title, urlOfRoute(newRoute))
+  }
 
-  const router = { route, goTo };
+  const router = { route, goTo, replaceLocation };
   return <Router.Provider value={router}>{props.children}</Router.Provider>
 }
 
