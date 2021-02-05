@@ -9,11 +9,12 @@ import {
 } from "solid-js";
 import { render, For } from "solid-js/web";
 
-import { Children, EditorMode } from './types'
+import { Children } from './types'
 import {
   Route, urlOfRoute,
   NewNote, EditNote,
   Router, RoutingContext,
+  EditorMode,
 } from './router'
 
 import './styles.css';
@@ -64,8 +65,7 @@ const Notes = () => {
   onMount(() => { editorView = initializeEditorView(editorNode) });
 
   createEffect(() => {
-    let editorMode = route.editorMode;
-    if (editorMode.mode === EditorMode.New) {
+    if (route.mode === EditorMode.New) {
       if (activeNoteID) { // We were already editing a note
         // Save the note we were just editing.
         notes.set(activeNoteID, editorView.state);
@@ -76,8 +76,8 @@ const Notes = () => {
       }
       document.title = "New note";
       editorView.focus();
-    } else if (editorMode.mode === EditorMode.Edit) {
-      let noteID = editorMode.noteID;
+    } else if (route.mode === EditorMode.Edit) {
+      let noteID = route.noteID;
       if (noteID !== activeNoteID) {
         // We are editing a particular note – not the one we were already editing,
         // if any. (If it was the one we were already editing, there is no need to
@@ -89,7 +89,7 @@ const Notes = () => {
         // If we know of this note, show it; if not, create a fresh note.
         noteState ? editorView.updateState(noteState) : editorView.updateState(createEditorState());
       }
-    } else if (editorMode.mode === EditorMode.Disabled) { // Otherwise, we are already editing the requested note; do nothing.
+    } else if (route.mode === EditorMode.Disabled) { // Otherwise, we are already editing the requested note; do nothing.
       // We are not editing any note.
       if (activeNoteID) {
         // We were just now, though. Make sure to
@@ -120,7 +120,7 @@ const Notes = () => {
       <main class="flex-auto w-96 ml-4">
         <article
           class="prose"
-          style={{ display: route.editorMode.mode === EditorMode.Disabled ? 'none' : 'block' }}
+          style={{ display: route.mode === EditorMode.Disabled ? 'none' : 'block' }}
           ref={editorNode}>
         </article>
       </main>

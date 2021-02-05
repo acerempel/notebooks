@@ -1,5 +1,5 @@
 import {
-  Children, EditorMode, EditorModeRoute,
+  Children,
   NoteID, HistoryChangeMode,
 } from './types'
 
@@ -11,27 +11,33 @@ import {
 
 export {
   Route, urlOfRoute, routeOfRelativeURL,
-  Page, AllNotes, NewNote, EditNote,
-  Router, RoutingContext,
+  AllNotes, NewNote, EditNote,
+  Router, RoutingContext, EditorMode
 }
 
-interface NotesRoute { page: Page.Notes, editorMode: EditorModeRoute }
-type Route = NotesRoute
+enum EditorMode {
+  New = "new",
+  Edit = "edit",
+  Disabled = "off",
+}
+
+type NewEditorMode = { mode: EditorMode.New }
+type EditEditorMode = { mode: EditorMode.Edit, noteID: NoteID }
+type DisabledEditorMode = { mode: EditorMode.Disabled }
+type Route =
+  | NewEditorMode
+  | EditEditorMode
+  | DisabledEditorMode
 
 function urlOfRoute(route: Route): string {
-  let comp1 = route.page;
-  let comp2 = "";
-  if (route.page === Page.Notes) {
-    switch (route.editorMode.mode) {
-      case EditorMode.New:
-        comp2 = "/new"; break;
-      case EditorMode.Edit:
-        comp2 = '/' + route.editorMode.noteID; break;
-      case EditorMode.Disabled:
-        break;
-    }
+  switch (route.mode) {
+    case EditorMode.New:
+      return '/notes/new';
+    case EditorMode.Edit:
+      return '/notes/' + route.noteID;
+    case EditorMode.Disabled:
+      return '/notes';
   }
-  return '/' + comp1 + comp2
 }
 
 function routeOfRelativeURL(url: string): Route {
@@ -45,7 +51,7 @@ function routeOfRelativeURL(url: string): Route {
     return AllNotes;
   } else {
     switch (pathParts[0]) {
-      case Page.Notes:
+      case 'notes':
         let subroute = pathParts[1];
         if (subroute === EditorMode.New) { return NewNote }
         else if (subroute) { return EditNote(subroute) }
@@ -55,14 +61,10 @@ function routeOfRelativeURL(url: string): Route {
   }
 }
 
-enum Page {
-  Notes = "notes",
-}
-
-const AllNotes: NotesRoute = { page: Page.Notes, editorMode: { mode: EditorMode.Disabled } }
-const NewNote: NotesRoute = { page: Page.Notes, editorMode: { mode: EditorMode.New } }
-const EditNote: (id: NoteID) => NotesRoute =
-  (noteID) => ({ page: Page.Notes, editorMode: { mode: EditorMode.Edit, noteID } })
+const AllNotes: Route = { mode: EditorMode.Disabled }
+const NewNote: Route = { mode: EditorMode.New }
+const EditNote: (id: NoteID) => Route =
+  (noteID) => ({ mode: EditorMode.Edit, noteID })
 
 const defaultRoute: Route = AllNotes
 const Router = createContext({
