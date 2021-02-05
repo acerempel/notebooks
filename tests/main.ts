@@ -22,19 +22,21 @@ function spawnServer(): Promise<[ChildProcess, Promise<void>]> {
     let deadPromise = new Promise<void>((resolveDead, _reject) => {
       child.on('exit', () => resolveDead())
     })
-    // I want to write this, but the 'spawn' event is not available until Node
-    // 15.1 and I don't feel like upgrading.
-    // child.on('spawn', () => resolve([child, deadPromise]))
     child.on('error', (error: Error) => {
       console.error("Error with server: " + error);
       process.exit()
     })
+    // I want to write this, but the 'spawn' event is not available until Node
+    // 15.1, and GitHub Actions only has Node 12:
+    // child.on('spawn', () => resolve([child, deadPromise]))
     setTimeout(() => resolve([child, deadPromise]), 3000);
   })
 }
 
 beforeAll(async () => {
   browser = await puppeteer.launch({ headless: true })
+  // If we're not in CI, then the server will be running already, because I
+  // will have started it with `yarn run dev`.
   if (process.env.CI) { [server, dead] = await spawnServer(); }
 }, 7000)
 
@@ -42,7 +44,7 @@ afterAll(async () => {
   await browser.close();
   if (server) {
     server.kill();
-    await dead;
+    await dead; // This is important!
   }
 })
 
@@ -117,6 +119,7 @@ describe('Switching between notes', () => {
   })
 
   test('Switching to the previous note', async () => {
+    // This selector is too complicated!
     const prevNoteLink = await page.$('ul[aria-label="Notes"]>li:first-child a');
     expect(prevNoteLink).toBeTruthy();
     await prevNoteLink!.click();
